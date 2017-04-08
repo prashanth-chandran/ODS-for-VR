@@ -17,8 +17,10 @@ property uchar blue
 end_header
 '''
 
-path = "record0/cam0/"
-path1 = path + "0000000"
+cam_path1= "record0/cam0/"
+cam_path2 = "record0/cam1/"
+path1 = cam_path1 + "0000000"
+path2 = cam_path2 + "0000000"
 
 def write_ply(fn, verts, colors):
     verts = verts.reshape(-1, 3)
@@ -31,8 +33,8 @@ def write_ply(fn, verts, colors):
 
 if __name__ == '__main__':
     print('loading images...')
-    imgL = cv2.pyrDown( cv2.imread(path1 + "00" + str(1) + ".png") )  # downscale images for faster processing
-    imgR = cv2.pyrDown( cv2.imread(path1 + "00" + str(2) + ".png") )
+    imgL = cv2.pyrDown( cv2.imread(path1 + "00" + str(0) + ".png") )  # downscale images for faster processing
+    imgR = cv2.pyrDown( cv2.imread(path1 + "00" + str(0) + ".png") )
 
     # disparity range is tuned for 'aloe' image pair
     window_size = 3
