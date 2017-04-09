@@ -13,8 +13,8 @@ class Stitcher:
 	def stitch(self, 
 				image1, 
 				image2, 
-				ratio=0.75, 
-				reprojThresh=4.0, 
+				ratio=0.7, 
+				reprojThresh=5.0, 
 				showMatches = False):
 
 		# detect key points and descriptors from the two images

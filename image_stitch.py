@@ -8,14 +8,15 @@ def testImageStitcher():
 	ap = argparse.ArgumentParser()
 	ap.add_argument("-f", "--first", required=True, help="path to the first image")
 	ap.add_argument("-s", "--second", required=True, help="path to the second image")
+	ap.add_argument("-r", "--result", required=False, help="path to save the panaroma")
 	args = vars(ap.parse_args())
 
 	# Image IO
 	image1 = cv2.imread(args["first"])
 	print(args["first"], args["second"])
 	image2 = cv2.imread(args["second"])
-	image1 = imutils.resize(image1, width=400)
-	image2 = imutils.resize(image2, width=400)
+	# image1 = imutils.resize(image1, width=400)
+	# image2 = imutils.resize(image2, width=400)
 	print(image1.shape, image2.shape)
 
 	# Call our stitch function
@@ -27,6 +28,7 @@ def testImageStitcher():
 	cv2.imshow("Key point matches", vis)
 	cv2.imshow("Stitched result", pan)
 	cv2.waitKey(0)
+	cv2.imwrite(args["result"], pan)
 
 
 def buildPanaroma():
