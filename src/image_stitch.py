@@ -15,8 +15,8 @@ def testImageStitcher():
 	image1 = cv2.imread(args["first"])
 	print(args["first"], args["second"])
 	image2 = cv2.imread(args["second"])
-	# image1 = imutils.resize(image1, width=400)
-	# image2 = imutils.resize(image2, width=400)
+	image1 = imutils.resize(image1, width=400)
+	image2 = imutils.resize(image2, width=400)
 	print(image1.shape, image2.shape)
 
 	# Call our stitch function
