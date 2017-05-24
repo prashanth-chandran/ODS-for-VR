@@ -66,7 +66,9 @@ class Camera:
 	def transformRayToCameraRef(self, ray, camera_extrinsics):
 		self.cameraSanityCheck()
 		ray_homogeneous = np.append(ray, 1)
-		return np.dot(camera_extrinsics, ray_homogeneous)[0:3]
+		ray=np.dot(camera_extrinsics, ray_homogeneous)
+		#normalize ray again
+		return ray[0:3]/ray[3]
 
 # end class Camera 
 
