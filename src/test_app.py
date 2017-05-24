@@ -46,12 +46,112 @@ def test_overlap():
 
 def test_SJPFramework():
 	# Basic tests for the SJPImage class
-	args = arg_setup()
-	image1 = args["first"]
-	image2 = args["second"]
-	sim1 = SJPImage(image1)
-	sim2 = SJPImage(image2)
-	sim1.imshow()
+	image1 = '../test_data/custom_db/ETH_HG/Polyterasse/0.jpg'
+	image2 = '../test_data/custom_db/ETH_HG/Polyterasse/1.jpg'
+	image3 = '../test_data/custom_db/ETH_HG/Polyterasse/2.jpg'
+	image4 = '../test_data/custom_db/ETH_HG/Polyterasse/3.jpg'
+	image5 = '../test_data/custom_db/ETH_HG/Polyterasse/4.jpg'
+	image6 = '../test_data/custom_db/ETH_HG/Polyterasse/5.jpg'
+	image7 = '../test_data/custom_db/ETH_HG/Polyterasse/6.jpg'
+	image8 = '../test_data/custom_db/ETH_HG/Polyterasse/7.jpg'
+	sim1 = SJPImage(file_name=image1)
+	sim2 = SJPImage(file_name=image2)
+	sim3 = SJPImage(file_name=image3)
+	sim4 = SJPImage(file_name=image4)
+	sim5 = SJPImage(file_name=image5)
+	sim6 = SJPImage(file_name=image6)
+	sim7 = SJPImage(file_name=image7)
+	sim8 = SJPImage(file_name=image8)
+
+	sim1.initializeImage(sim8, sim2)
+	sim2.initializeImage(sim1, sim3)
+	sim3.initializeImage(sim2, sim4)
+	sim4.initializeImage(sim3, sim5)
+	sim5.initializeImage(sim4, sim6)
+	sim6.initializeImage(sim5, sim7)
+	sim7.initializeImage(sim6, sim8)
+	sim8.initializeImage(sim7, sim1)
+
+	pan_size = (500, 225)
+	H = sim2.getHomographyLeft()
+	HI = np.identity(3)
+	temp0 = cv2.warpPerspective(sim1.getImage(), HI, pan_size)
+	cv2.waitKey(0)
+
+def test_SJP_Sequential():
+	image1 = '../test_data/custom_db/ETH_HG/Polyterasse/0.jpg'
+	image2 = '../test_data/custom_db/ETH_HG/Polyterasse/1.jpg'
+	image3 = '../test_data/custom_db/ETH_HG/Polyterasse/2.jpg'
+	image4 = '../test_data/custom_db/ETH_HG/Polyterasse/3.jpg'
+	image5 = '../test_data/custom_db/ETH_HG/Polyterasse/4.jpg'
+	image6 = '../test_data/custom_db/ETH_HG/Polyterasse/5.jpg'
+	image7 = '../test_data/custom_db/ETH_HG/Polyterasse/6.jpg'
+	image8 = '../test_data/custom_db/ETH_HG/Polyterasse/7.jpg'
+	sim1 = SJPImage(file_name=image1)
+	sim2 = SJPImage(file_name=image2)
+	sim3 = SJPImage(file_name=image3)
+	sim4 = SJPImage(file_name=image4)
+	sim5 = SJPImage(file_name=image5)
+	sim6 = SJPImage(file_name=image6)
+	sim7 = SJPImage(file_name=image7)
+	sim8 = SJPImage(file_name=image8)
+
+	# define the size of the panaroma
+	pan_size = (1200, 225)
+	HI = np.identity(3)
+	res1 = cv2.warpPerspective(sim1.getImage(), HI, pan_size)
+
+	sres1 = SJPImage(image=res1.copy(), resize=False)
+	sres1.initializeImage(None, sim2)
+	sim2.initializeImage(sres1, None)
+	H = sim2.getHomographyLeft()
+	# H[2, 0 ]= 0
+	# H[2, 1] = 0
+	res2 = cv2.warpPerspective(sim2.getImage(), H, pan_size)
+	
+	sres2 = SJPImage(res2.copy(), resize=False)
+	sres2.initializeImage(None, sim3)
+	sim3.initializeImage(sres2, None)
+	H = sim3.getHomographyLeft()
+	# H[2, 0 ]=0
+	# H[2, 1] = 0
+	res3 = cv2.warpPerspective(sim3.getImage(), H, pan_size)
+
+	sres3 = SJPImage(image=res3.copy(), resize=False)
+	sres3.initializeImage(None, sim4)
+	sim4.initializeImage(sres3, None)
+	H = sim4.getHomographyLeft()
+	# H[2, 0 ]=0
+	# H[2, 1] = 0
+	res4 = cv2.warpPerspective(sim4.getImage(), H, pan_size)
+
+	sres4 = SJPImage(image=res4.copy(), resize=False)
+	sres4.initializeImage(None, sim5)
+	sim5.initializeImage(sres4, None)
+	H = sim5.getHomographyLeft()
+	# H[2, 0 ] = 0
+	# H[2, 1] = 0
+	res5 = cv2.warpPerspective(sim5.getImage(), H, pan_size)
+
+	sres5 = SJPImage(image=res5.copy(), resize=False)
+	sres5.initializeImage(None, sim6)
+	sim6.initializeImage(sres5, None)
+	H = sim6.getHomographyLeft()
+	# H[2, 0 ]=0
+	# H[2, 1] = 0
+	res6 = cv2.warpPerspective(sim6.getImage(), H, pan_size)	
+
+
+	pan_stack = np.stack((res1, res2, res3, res4, res5, res6), axis=-1)
+	print(pan_stack.shape)
+	res_avg = np.mean(pan_stack, axis=3)
+	res_avg = np.uint8(res_avg)
+	sres_avg = SJPImage(res_avg, resize=False)
+	
+	sres1.imshow('1')
+	# sres2.imshow('2')
+	# sres3.imshow('3')
+	sres_avg.imshow('composite')
 	cv2.waitKey(0)
 
 
@@ -114,7 +214,8 @@ def test_optical_flow():
 def main():
 	# test_overlap()
 	# test_SJPFramework()
-	test_exposure_correct()
+	test_SJP_Sequential()
+	# test_exposure_correct()
 	# test_optical_flow()
 
 

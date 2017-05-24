@@ -4,11 +4,6 @@ import cv2
 
 
 class Stitcher:
-"""
-	Image stitcher.
-	Key point calculator.
-	Key point matcher.
-"""
 	def __init__(self):
 		# Do nothing
 		self.name = 'Stitcher'
@@ -36,8 +31,12 @@ class Stitcher:
 
 		# get the homography from the feature matching and use it to perspective warp the image
 		(matches, H, status) = M
-		result = cv2.warpPerspective(image1, H, (image1.shape[1]+image2.shape[1],
-										image1.shape[0]))
+		result = np.zeros((image2.shape[1]+image1.shape[1], image2.shape[0]))
+		size_res = (result.shape)
+		temp = cv2.warpPerspective(image1, H, size_res)
+		print(H)
+		print(H.shape)
+		result = temp
 		result[0:image2.shape[0], 0:image2.shape[1]] = image2
 
 		if showMatches:
@@ -112,10 +111,6 @@ class Stitcher:
 
 
 class ImageOverlapProcessor:
-"""
-Calculates overlapping portions of images from key point matches. 
-Used in exposure correction.
-"""
 	def __init__(self, image_dim, direction='left'):
 		self.img_dim = np.asarray(image_dim)
 		self.x_dim = self.img_dim[1]
