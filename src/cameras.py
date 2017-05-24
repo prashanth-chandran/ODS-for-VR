@@ -1,6 +1,7 @@
 import yaml
 import numpy as np
 import os
+import matplotlib.pyplot as pyplt
 
 
 class Camera:
@@ -71,6 +72,64 @@ class Camera:
 		return ray[0:3]/ray[3]
 
 # end class Camera 
+
+
+class CameraCollection():
+
+	def __init__(self):
+		self.camera_collection = []
+		self.num_cameras = 0
+		self.init_complete = False
+
+	def sanityCheck(self):
+		if not self.init_complete:
+			raise RuntimeError('Camera collection is not initialized')
+
+	def addCamera(self, camera):
+		self.camera_collection.append(camera)
+		self.num_cameras = self.num_cameras + 1
+
+
+	def readAllCameras(self, yaml):
+		calib_data = load_camera_calibration_data(yaml)
+		num_cameras = len(calib_data)
+
+		for i in range(num_cameras):
+			cam_name = 'cam' + str(i)
+			c = Camera()
+			c.loadCameraFromYaml(calib_data, cam_name)
+			self.addCamera(c)
+
+
+	def __getitem__(self, key):
+		return self.camera_collection[key]
+
+
+	def __len__(self):
+		return self.num_cameras
+
+
+	def visualizeCameras(self, origin):
+		
+		if len(origin) != 3:
+			raise RuntimeError('Only 3D co-ordinates supported. Origin must be a 3D vector.')
+
+		camera_xz_locs = np.zeros((self.num_cameras, 2), dtype='float32')
+		# First camera is considered to be at the origin by default
+		camera_xz_locs[0, :] = [origin[0], origin[2]]
+		for i in range(1, self.num_cameras):
+			ref = np.asarray([0, 0], dtype='float32')
+			ref = camera_xz_locs[i-1, :]
+			current_camera_relative_loc = self.camera_collection[i].getExtrinsics()
+			camera_xz_locs[i, :] = ref - [current_camera_relative_loc[0][3], current_camera_relative_loc[2][3]]
+
+
+		fig, ax = pyplt.subplots()
+		ax.scatter(camera_xz_locs[:, 0], camera_xz_locs[:, 1])
+		for i in range(self.num_cameras):
+			ax.annotate(self.camera_collection[i].camera_name, (camera_xz_locs[i, 0], camera_xz_locs[i, 1]))
+		pyplt.show()
+
 
 
 def load_camera_calibration_data(file_name):

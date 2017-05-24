@@ -27,8 +27,18 @@ def test_renderer():
 	cv2.waitKey(0)
 
 
+def test_camera_visualization():
+	args = arg_setup()
+	cam_file = args["second"]
+	yaml_data = load_camera_calibration_data(cam_file)
+	cc = CameraCollection()
+	cc.readAllCameras(cam_file)
+	cc.visualizeCameras([0, 0, 0])
+
+
 def main():
-	test_renderer()
+	# test_renderer()
+	test_camera_visualization()
 
 
 if __name__ == '__main__':
