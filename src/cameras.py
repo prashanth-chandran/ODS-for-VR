@@ -119,10 +119,10 @@ class CameraCollection():
 		camera_xz_locs[0, :] = [origin[0], origin[2]]
 		for i in range(1, self.num_cameras):
 			ref = np.asarray([0, 0], dtype='float32')
-			ref = camera_xz_locs[i-1, :]
+			ref_cam = self.camera_collection[i-1].getExtrinsics()
+			ref = [ref_cam[0][3], ref_cam[2][3]]
 			current_camera_relative_loc = self.camera_collection[i].getExtrinsics()
-			camera_xz_locs[i, :] = ref - [current_camera_relative_loc[0][3], current_camera_relative_loc[2][3]]
-
+			camera_xz_locs[i, :] = ref[0]+current_camera_relative_loc[0][3], ref[1]+current_camera_relative_loc[2][3]
 
 		fig, ax = pyplt.subplots()
 		ax.scatter(camera_xz_locs[:, 0], camera_xz_locs[:, 1])
