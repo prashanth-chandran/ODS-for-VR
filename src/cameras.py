@@ -117,11 +117,14 @@ class CameraCollection():
 		self.planar_camera_positions = np.zeros((self.num_cameras, 2), dtype='float32')
 		# First camera is considered to be at the origin by default
 		self.planar_camera_positions[0, :] = [origin[0], origin[2]]
+		ordering=[0,1,2,3,8,9,7,6,4,5]
 		for i in range(1, self.num_cameras):
 			#ref = np.asarray([0, 0], dtype='float32')
 			# Reference camera for the current camera is the previous camera (according to the .yaml file)
+			cam_i=ordering[i]
+			cam_i_old=ordering[i-1]
 			ref_cam = self.camera_collection[i-1].getExtrinsics()
-			#ref_cam = self.camera_collection[0].getExtrinsics()
+			#ref_cam = self.camera_collection[cam_i_old].getExtrinsics()
 			#ref = [ref_cam[0][3], ref_cam[2][3]]
 			# Extract [x,z] values from the current camera extrinsics and add it with the reference.
 			R=np.zeros((3, 3), dtype='float32')
@@ -173,7 +176,7 @@ class CameraCollection():
 			#print(t)
 			pos=np.dot(-R2,t2)
 			#camera_xz_locs[i, :] = ref[0]+current_camera_relative_loc[0][3], ref[2]+current_camera_relative_loc[2][3]
-			camera_xz_locs[i, :] =ref[0]+pos[0], ref[2]+pos[2]
+			camera_xz_locs[cam_i, :] =ref[0]+pos[0], ref[2]+pos[2]
 			
 	def visualizeCameras(self, origin):
 		self.updateCameraXZLocations(origin)
