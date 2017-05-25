@@ -35,6 +35,14 @@ class RenderODS():
 	def __init__(self):
 		pass
 
+		
+	def linearInterpolation(theta_0, theta_1,theta_a, theta_b):
+		diff_1b=theta_1-theta_b
+		diff_0a=theta_0-theta_a
+		diff_ba=theta_b-theta_a
+		diff_01=theta_0-theta_1
+		
+		theta_p=((diff_1b*theta_0)+(diff_0a*theta_1))/(diff_ba+diff_01)
 
 	def setCameraList(self, camera_collection):
 		self.camera_list = camera_list
