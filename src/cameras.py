@@ -105,6 +105,12 @@ class Camera:
 	def setCOPRight(self, cop_right):
 		self.cop_col_right = cop_right
 
+	def getCOPLeft(self):
+		return self.cop_col_left
+
+	def getCOPRight(self):
+		return self.cop_col_right
+
 	def setCOPRelativeAngleLeft(self, theta):
 		self.cop_rtheta_left = theta
 		self.cop_col_left = self.getIncidentColumn(theta, offsetByWidth=True)

@@ -48,6 +48,9 @@ class RendererODS():
 		self.camera_list = camera_collection
 		self.init_complete = True
 
+	def setImageList(self, image_collection):
+		self.image_list = image_collection
+
 	def sanityCheck(self):
 		if not self.init_complete:
 			raise RuntimeError('Camera collection is not initialized')
@@ -57,7 +60,7 @@ class RendererODS():
 		self.sanityCheck()
 		height = output_image_dim[0]
 		width = output_image_dim[1]
-		output_image = np.zeros((output_image_dim[0], output_image_dim[1]), dtype='uint8')
+		output_image = np.zeros((output_image_dim[0], output_image_dim[1], 3), dtype='uint8')
 
 		camera_positions = self.camera_list.getCameraCentresXZ(origin)
 		viewing_circle_centre = self.camera_list.getViewingCircleCentre()
@@ -81,11 +84,19 @@ class RendererODS():
 
 			if eye is 1:
 				xn = xn_right
+				col_img = self.camera_list[i].getCOPRight()
 			else:
 				xn = xn_left
+				col_img = self.camera_list[i].getCOPLeft()
 
 			col_index = int(unnormalizeX(xn, width))
-			output_image[:, col_index] = 127
+
+			if self.image_list is None:
+				output_image[:, col_index, :] = [127, 127, 127]
+			else:
+				# print(col_img)
+				image = self.image_list[i]
+				output_image[:, col_index, :] = image.getColumn(int(col_img))
 
 		return output_image
 

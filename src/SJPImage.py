@@ -3,6 +3,7 @@ import cv2
 import imutils
 import os 
 import os.path as op
+import yaml
 from Stitcher import *
 from ExposureCorrect import *
 
@@ -25,7 +26,7 @@ class SJPImage:
 			self.channels = self.cv_image.shape[2]
 			self.image_dim = [self.rows, self.cols, self.channels]
 
-		self.cameraID = 0
+		self.cameraID = 'unknown'
 		self.frameID = 0
 		self.left_overlap_proc = ImageOverlapProcessor(self.image_dim, direction='left')
 		self.right_overlap_proc = ImageOverlapProcessor(self.image_dim, direction='right')
@@ -39,15 +40,20 @@ class SJPImage:
 		self.Matches_left = None
 		self.Matches_right = None
 
-	def initializeImage(self, left_image, right_image):
+	def initializeImage(self, left_image=None, right_image=None):
 		stitcher = Stitcher()
 		self.setKeypoints(stitcher.getKeyPoints(self.cv_image))
-		self.left_image = left_image
-		self.right_image = right_image
-		self.updateOverlappingRegions(self.left_image, self.right_image)
+		if left_image is not None:
+			self.left_image = left_image
+		if right_image is not None:
+			self.right_image = right_image
+		if right_image is not None and left_image is not None:
+			self.updateOverlappingRegions(self.left_image, self.right_image)
 
 	def readImage(self, file_name, resize=True):
 		self.cv_image = cv2.imread(file_name)
+		if self.cv_image is None:
+			raise RuntimeError('Image does not exist.')
 		if resize:
 			self.cv_image = imutils.resize(self.cv_image, width=400)
 		self.rows = self.cv_image.shape[0]
@@ -164,6 +170,12 @@ class SJPImage:
 	def getHomographyRight(self):
 		return self.H_right
 
+	def getColumn(self, column_index):
+		if column_index >= 0 and column_index < self.cols:
+			return self.cv_image[:, column_index, :]
+		else:
+			raise RuntimeError('Index exceeds image dimensions')
+
 	def imshow(self, meta_data):
 		if self.file_name is None:
 			self.file_name = 'Unknown'
@@ -172,18 +184,22 @@ class SJPImage:
 			title_ = title_ + meta_data
 		cv2.imshow(title_, self.cv_image)
 
+	def __str__(self):
+		return self.file_name
+
 # End class SJPImage
 
 
 class SJPImageCollection:
 	def __init__(self, sjp_image_list = None):
-		self.sjp_image_list = None
+		self.sjp_image_list = []
 		self.frameID = -1
-		self.num_cameras = len(sjp_image_list)
+		self.num_images = 0
 
 	
 	def addImageToCollection(self, sjp_image):
 		self.sjp_image_list.append(sjp_image)
+		self.num_images = self.num_images + 1
 
 
 	def stitchImagesInCollection(self, dest_image_size):
@@ -201,9 +217,33 @@ class SJPImageCollection:
 
 		pass
 
+	def loadImagesFromYAML(self, file_name, cam_name):
+		with open(file_name, 'r') as stream:
+			try:
+				calib_data = yaml.load(stream)
+			except Exception as e:
+				raise RuntimeError('Something bad happened when loading the .yaml file')
+
+		image_names = calib_data[cam_name]['images']
+		for image in image_names:
+			print('reading image: ', image)
+			im_new = SJPImage(file_name=image, resize=False)
+			im_new.initializeImage()
+			im_new.setFrameID(cam_name)
+			self.addImageToCollection(im_new)
+
 
 	def setFrameID(self, frameID):
 		self.frameID = frameID
+
+	def getNumberOfImages(self):
+		return self.num_images
+
+	def __getitem__(self, key):
+		return self.sjp_image_list[key]
+
+	def __len__(self):
+		return self.num_images
 
 
 # End class SJPImageCollection
