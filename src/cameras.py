@@ -2,6 +2,7 @@ import yaml
 import numpy as np
 import os
 import matplotlib.pyplot as pyplt
+from RayGeometry import *
 
 
 class Camera:
@@ -118,6 +119,7 @@ class CameraCollection():
 		# First camera is considered to be at the origin by default
 		self.planar_camera_positions[0, :] = [origin[0], origin[2]]
 		ordering=[0,1,2,3,8,9,7,6,4,5]
+		# ordering = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 		for i in range(1, self.num_cameras):
 			#ref = np.asarray([0, 0], dtype='float32')
 			# Reference camera for the current camera is the previous camera (according to the .yaml file)
@@ -175,15 +177,65 @@ class CameraCollection():
 			#print(t)
 			pos=np.dot(-R2,t2)
 			self.planar_camera_positions[cam_i, :] = ref[0]+pos[0], ref[2]+pos[2]
-			
+	
+
+	def getCameraCentresXZ(self, origin):
+		self.updateCameraXZLocations(origin)
+		return self.planar_camera_positions
+
+
+	def getViewingCircleCentre(self):
+		# Uncomment following line to set the viewing circle centre to the average of the cameras.
+		# This works when all cameras are properly aligned in a circle.
+		# centre = np.sum(self.planar_camera_positions, axis=0)/self.num_cameras
+		# Fit a circle to locations of cameras 0, 2 and 8
+		if self.planar_camera_positions is None:
+			self.updateCameraXZLocations([0, 0, 0])
+		centre = fitCircleTo3Points(self.planar_camera_positions[0, :], 
+			self.planar_camera_positions[2, :], self.planar_camera_positions[8, :])
+		return centre
+
+	def getViewingCircleRadius(self):
+		centre = self.getViewingCircleCentre()
+		return np.linalg.norm(self.planar_camera_positions[0, :]-centre)
+
+	def getNumCameras(self):
+		return self.num_cameras
+
+
 	def visualizeCameras(self, origin):
 		self.updateCameraXZLocations(origin)
+		centre = self.getViewingCircleCentre()
+		# test IPD
+		ipd = self.getViewingCircleRadius()/2
 		# Plot camera locations with their names
 		fig, ax = pyplt.subplots()
 		ax.scatter(self.planar_camera_positions[:, 0], self.planar_camera_positions[:, 1])
+		ax.hold('on')
+
+		# Plot cameras
 		for i in range(self.num_cameras):
 			ax.annotate(self.camera_collection[i].camera_name, (self.planar_camera_positions[i, 0], 
 				self.planar_camera_positions[i, 1]))
+
+		# Plot viewing circle along with its centre
+		ax.scatter(centre[0], centre[1], color='red')
+		ax.annotate('Centre', (centre[0], centre[1]))
+
+		viewing_circle = getCirclePoints(centre, ipd)
+		print(ipd)
+		ax.scatter(viewing_circle[:, 0],viewing_circle[:, 1], color='red')
+		
+		# Plot left eye tangent points for the left eye
+		for i in range(self.num_cameras):
+			point_right = genPointOnViewingCircle(centre, self.planar_camera_positions[i, :], ipd)
+			point_left = genPointOnViewingCircle(centre, self.planar_camera_positions[i, :], ipd, eye=-1)
+			ax.scatter(point_right[0], point_right[1],color='orange')
+			ax.annotate(str(i) + 'R', (point_right[0], point_right[1])
+				, xytext=(point_right[0]+0.0001, point_right[1]+0.0001))
+			ax.scatter(point_left[0], point_left[1],color='green')
+			ax.annotate(str(i) + 'L', (point_left[0], point_left[1]))
+
 		pyplt.show()
 
 

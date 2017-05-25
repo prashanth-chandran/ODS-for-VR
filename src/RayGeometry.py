@@ -16,11 +16,23 @@ def thetaPhiToNormalizedXY(theta, phi):
 	yn = phiToNormalizedY(phi)
 	return xn, yn
 
+def normalizeX(x, width):
+	return np.float32(x)/np.float32(width)
+
+def normalizeY(y, height):
+	return np.float32(y)/np.float32(height)
+
 def normalizeXY(x, y, width, height):
-	return np.float32(x)/np.float32(width), np.float32(y)/np.float32(height)
+	return normalizeX(x, width), normalizeY(y, height)
+
+def unnormalizeX(xn, width):
+	return xn*width
+
+def unnormalizeY(yn, height):
+	return yn*height
 
 def unnormalizeXY(xn, yn, width, height):
-	return xn*width, yn*height
+	return unnormalizeX(xn, width), unnormalizeY(yn, height)
 
 def unit_vector(vector):
     return vector / np.linalg.norm(vector)
@@ -52,23 +64,73 @@ def getAngle(centre, cam_pos, ipd):
 	return np.arctan2(ver, hor)
 
 
-def genPointOnCircle(centre, cam_pos,ipd):
+def genPointOnViewingCircle(centre, cam_pos, ipd, eye=1):
 	angle = getAngle(np.asarray(centre), np.asarray(cam_pos), ipd)
-	slope = np.tan(angle)
+	switch_sign = False
+	if cam_pos[1] > centre[1]:
+		slope = (cam_pos[1]-centre[1])/(cam_pos[0]-centre[0])
+	else:
+		slope = (centre[1]-cam_pos[1])/(centre[0]-cam_pos[0])
+		switch_sign = True
 	perp_slope = -1/slope
 	dir_vec = np.asarray([1, perp_slope], dtype='float32')
 	dir_vec = unit_vector(dir_vec)
-	res = centre + ipd/2*(dir_vec)
+	if eye == 1:
+		if switch_sign:
+			res = centre - ipd*(dir_vec)
+		else:
+			res = centre + ipd*(dir_vec)
+	else:
+		if switch_sign:
+			res = centre + ipd*(dir_vec)
+		else:
+			res = centre - ipd*(dir_vec)
 	return res
 
 def xzToTheta(xz, origin):
-	xc = xz[0]
-	zc = xz[1]
-	return np.arctan2(zc, xc)
+	vec = xz-origin
+	return np.arctan2(vec[1], vec[0])
 
-def getCameraOnSphere(camera_pos, origin, ipd):
-	point_on_circle = genPointOnCircle(camera_pos, origin, ipd)
+def mapCameraToSphere(camera_pos, origin, ipd, eye=1):
+	point_on_circle = genPointOnViewingCircle(origin, camera_pos, ipd, eye=eye)
+	# print(xzToTheta(point_on_circle, origin), radians2Degrees(xzToTheta(point_on_circle, origin)))
+	# print(thetaToNormalizedX(xzToTheta(point_on_circle, origin)))
 	return thetaToNormalizedX(xzToTheta(point_on_circle, origin))
 
 
+def fitCircleTo3Points(point1, point2, point3):
+	# Reference : http://paulbourke.net/geometry/circlesphere/
+	m1 = (point2[1]-point1[1])/(point2[0]-point1[0])
+	m2 = (point3[1]-point2[1])/(point3[0]-point2[0])
 
+	centre_x = m1*m2*(point1[1]-point3[1]) + m2*(point1[0]+point2[0])
+	centre_x = centre_x - m1*(point2[0]+point3[0])
+	centre_x = centre_x/(2*(m2-m1))
+
+	centre_y = (centre_x - ((point1[0]+point2[0])/2))*-1/m1
+	centre_y = centre_y + ((point1[1]+point2[1])/2)
+
+	return centre_x, centre_y
+
+
+def frange(start, stop, step):
+	i = start
+	while i < stop:
+		yield i
+		i += step
+
+
+def getCirclePoints(centre, radius, thresh=1e-4):
+	xc = centre[0]
+	yc = centre[1]
+	circle_points = []
+	step_size = np.float32(2*np.float32(radius)/100)
+	for x in frange(xc-radius, xc+radius,step_size):
+		for y in frange(yc-radius, yc+radius, step_size):
+			tmp = (x-xc)**2 + (y-yc)**2
+			tmp = np.abs(tmp - radius**2)
+			if tmp <= thresh:
+				circle_points.append([x, y])
+	if (len(circle_points) <= 0):
+		raise RuntimeError('Something bad with circle generation.')
+	return np.asarray(circle_points, dtype='float32')

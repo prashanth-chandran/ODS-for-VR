@@ -27,7 +27,7 @@ def test_renderer():
 	cv2.waitKey(0)
 
 
-def test_camera_visualization():
+def test_cameraRig_visualization():
 	args = arg_setup()
 	cam_file = args["second"]
 	yaml_data = load_camera_calibration_data(cam_file)
@@ -36,9 +36,24 @@ def test_camera_visualization():
 	cc.visualizeCameras([0, 0, 0])
 
 
+def test_ODS_renderer():
+	args = arg_setup()
+	cam_file = args["second"]
+	yaml_data = load_camera_calibration_data(cam_file)
+	cc = CameraCollection()
+	cc.readAllCameras(cam_file)
+	rods = RendererODS()
+	rods.setCameraList(cc)
+	vis_image = rods.visualizeProjectionCentres([400, 800])
+	cv2.imshow('Projection centres: ', vis_image)
+	cv2.waitKey(0)
+
+
+
 def main():
 	# test_renderer()
-	test_camera_visualization()
+	test_ODS_renderer()
+	test_cameraRig_visualization()
 
 
 if __name__ == '__main__':
