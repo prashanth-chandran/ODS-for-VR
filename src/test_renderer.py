@@ -6,8 +6,8 @@ import argparse
 
 def arg_setup():
 	ap = argparse.ArgumentParser()
-	ap.add_argument("-f", "--first", required=True, help="path to image")
-	ap.add_argument("-s", "--second", required=True, help="path to camera calibration file")
+	ap.add_argument("-f", "--first", required=True, help="path to image file")
+	ap.add_argument("-s", "--second", required=True, help="path to calibration file")
 	args = vars(ap.parse_args())
 	return args
 
@@ -42,15 +42,33 @@ def test_cameraRig_visualization():
 def test_ODS_renderer():
 	args = arg_setup()
 	cam_file = args["second"]
-	yaml_data = load_camera_calibration_data(cam_file)
+	image_file = args["first"]
+
 	cc = CameraCollection()
 	cc.readAllCameras(cam_file)
+	ic0 = SJPImageCollection()
+	ic0.loadImagesFromYAML(image_file, 'frame0')
+
 	rods = RendererODS()
+	rods.setImageList(ic0)
 	rods.setCameraList(cc)
 	# vis_image = rods.visualizeProjectionCentres([255, 800])
-	vis_image = rods.renderCOPSOnly(0.045/2, [225, 800])
+	vis_image = rods.renderCOPSOnly(0.045/2, [480, 800])
 	cv2.imshow('Projection centres: ', vis_image)
 	cv2.waitKey(0)
+
+
+def test_data_loader():
+	args = arg_setup()
+	calib_file = args["second"]
+	image_file = args["first"]
+	cc = CameraCollection()
+	cc.readAllCameras(calib_file)
+
+	ic0 = SJPImageCollection()
+	ic0.loadImagesFromYAML(image_file, 'frame0')
+	ic0.getNumberOfImages()
+
 
 
 
@@ -58,6 +76,7 @@ def main():
 	# test_renderer()
 	test_ODS_renderer()
 	# test_cameraRig_visualization()
+	# test_data_loader()
 
 
 if __name__ == '__main__':
