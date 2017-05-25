@@ -33,7 +33,10 @@ def test_cameraRig_visualization():
 	yaml_data = load_camera_calibration_data(cam_file)
 	cc = CameraCollection()
 	cc.readAllCameras(cam_file)
-	cc.visualizeCameras([0, 0, 0])
+	print(cc[0].getIncidentColumn(degree2Radians(0)))
+	for i in range(cc.getNumCameras()):
+		print(cc[i].getFieldOfViewInDegrees())
+	# cc.visualizeCameras([0, 0, 0])
 
 
 def test_ODS_renderer():
@@ -44,7 +47,8 @@ def test_ODS_renderer():
 	cc.readAllCameras(cam_file)
 	rods = RendererODS()
 	rods.setCameraList(cc)
-	vis_image = rods.visualizeProjectionCentres([400, 800])
+	# vis_image = rods.visualizeProjectionCentres([255, 800])
+	vis_image = rods.renderCOPSOnly(0.045/2, [225, 800])
 	cv2.imshow('Projection centres: ', vis_image)
 	cv2.waitKey(0)
 
@@ -53,7 +57,7 @@ def test_ODS_renderer():
 def main():
 	# test_renderer()
 	test_ODS_renderer()
-	test_cameraRig_visualization()
+	# test_cameraRig_visualization()
 
 
 if __name__ == '__main__':

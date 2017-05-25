@@ -57,6 +57,9 @@ def getRayOrientation(ray):
 def radians2Degrees(rad):
 	return rad*180/np.pi
 
+def degree2Radians(degree):
+	return degree*np.pi/180
+
 
 def getAngle(centre, cam_pos, ipd):
 	hor = np.linalg.norm(centre-cam_pos)
@@ -134,3 +137,7 @@ def getCirclePoints(centre, radius, thresh=1e-4):
 	if (len(circle_points) <= 0):
 		raise RuntimeError('Something bad with circle generation.')
 	return np.asarray(circle_points, dtype='float32')
+
+
+
+
