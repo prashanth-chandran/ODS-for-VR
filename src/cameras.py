@@ -79,6 +79,7 @@ class CameraCollection():
 	def __init__(self):
 		self.camera_collection = []
 		self.num_cameras = 0
+		self.planar_camera_positions = None
 		self.init_complete = False
 
 	def sanityCheck(self):
@@ -109,25 +110,32 @@ class CameraCollection():
 		return self.num_cameras
 
 
-	def visualizeCameras(self, origin):
-		
+	def updateCameraXZLocations(self, origin):
 		if len(origin) != 3:
 			raise RuntimeError('Only 3D co-ordinates supported. Origin must be a 3D vector.')
 
-		camera_xz_locs = np.zeros((self.num_cameras, 2), dtype='float32')
+		self.planar_camera_positions = np.zeros((self.num_cameras, 2), dtype='float32')
 		# First camera is considered to be at the origin by default
-		camera_xz_locs[0, :] = [origin[0], origin[2]]
+		self.planar_camera_positions[0, :] = [origin[0], origin[2]]
 		for i in range(1, self.num_cameras):
 			ref = np.asarray([0, 0], dtype='float32')
+			# Reference camera for the current camera is the previous camera (according to the .yaml file)
 			ref_cam = self.camera_collection[i-1].getExtrinsics()
+			# Extract [x, z] values from the reference calibration matrix
 			ref = [ref_cam[0][3], ref_cam[2][3]]
+			# Extract [x,z] values from the current camera extrinsics and add it with the reference.
 			current_camera_relative_loc = self.camera_collection[i].getExtrinsics()
-			camera_xz_locs[i, :] = ref[0]+current_camera_relative_loc[0][3], ref[1]+current_camera_relative_loc[2][3]
+			self.planar_camera_positions[i, :] = ref[0]+current_camera_relative_loc[0][3], ref[1]+current_camera_relative_loc[2][3]
 
+
+	def visualizeCameras(self, origin):
+		self.updateCameraXZLocations(origin)
+		# Plot camera locations with their names
 		fig, ax = pyplt.subplots()
-		ax.scatter(camera_xz_locs[:, 0], camera_xz_locs[:, 1])
+		ax.scatter(self.planar_camera_positions[:, 0], self.planar_camera_positions[:, 1])
 		for i in range(self.num_cameras):
-			ax.annotate(self.camera_collection[i].camera_name, (camera_xz_locs[i, 0], camera_xz_locs[i, 1]))
+			ax.annotate(self.camera_collection[i].camera_name, (self.planar_camera_positions[i, 0], 
+				self.planar_camera_positions[i, 1]))
 		pyplt.show()
 
 
