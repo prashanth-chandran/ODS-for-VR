@@ -118,16 +118,63 @@ class CameraCollection():
 		# First camera is considered to be at the origin by default
 		self.planar_camera_positions[0, :] = [origin[0], origin[2]]
 		for i in range(1, self.num_cameras):
-			ref = np.asarray([0, 0], dtype='float32')
+			#ref = np.asarray([0, 0], dtype='float32')
 			# Reference camera for the current camera is the previous camera (according to the .yaml file)
 			ref_cam = self.camera_collection[i-1].getExtrinsics()
-			# Extract [x, z] values from the reference calibration matrix
-			ref = [ref_cam[0][3], ref_cam[2][3]]
+			#ref_cam = self.camera_collection[0].getExtrinsics()
+			#ref = [ref_cam[0][3], ref_cam[2][3]]
 			# Extract [x,z] values from the current camera extrinsics and add it with the reference.
-			current_camera_relative_loc = self.camera_collection[i].getExtrinsics()
+			R=np.zeros((3, 3), dtype='float32')
+			t=np.zeros((3, 1), dtype='float32')
 			self.planar_camera_positions[i, :] = ref[0]+current_camera_relative_loc[0][3], ref[1]+current_camera_relative_loc[2][3]
 
-
+			#print(ref_cam[0][0])
+			
+			#VERY ugly matrix assignment, I am sorry, I didn't find a nicer way :(
+			R[0][0]=ref_cam[0][0]
+			R[1][0]=ref_cam[1][0]
+			R[2][0]=ref_cam[2][0]
+			R[0][1]=ref_cam[0][1]
+			R[1][1]=ref_cam[1][1]
+			R[2][1]=ref_cam[2][1]
+			R[0][2]=ref_cam[0][2]
+			R[1][2]=ref_cam[1][2]
+			R[2][2]=ref_cam[2][2]
+			R=np.transpose(R)
+			#print(R)
+			t[0]=ref_cam[0][3]
+			t[1]=ref_cam[1][3]
+			t[2]=ref_cam[2][3]
+			#print(t)
+			ref=np.dot(-R,t)
+			#print(ref)
+			#current_camera_relative_loc = self.camera_collection[i].getExtrinsics()
+			cam = self.camera_collection[i].getExtrinsics()
+			#ref = [ref_cam[0][3], ref_cam[2][3]]
+			R2=np.zeros((3, 3), dtype='float32')
+			t2=np.zeros((3, 1), dtype='float32')
+			#print(ref_cam[0][0])
+			
+			#VERY ugly matrix assignment, I am sorry, I didn't find a nicer way :(
+			R2[0][0]=cam[0][0]
+			R2[1][0]=cam[1][0]
+			R2[2][0]=cam[2][0]
+			R2[0][1]=cam[0][1]
+			R2[1][1]=cam[1][1]
+			R2[2][1]=cam[2][1]
+			R2[0][2]=cam[0][2]
+			R2[1][2]=cam[1][2]
+			R2[2][2]=cam[2][2]
+			R2=np.transpose(R2)
+			#print(R)
+			t2[0]=cam[0][3]
+			t2[1]=cam[1][3]
+			t2[2]=cam[2][3]
+			#print(t)
+			pos=np.dot(-R2,t2)
+			#camera_xz_locs[i, :] = ref[0]+current_camera_relative_loc[0][3], ref[2]+current_camera_relative_loc[2][3]
+			camera_xz_locs[i, :] =ref[0]+pos[0], ref[2]+pos[2]
+			
 	def visualizeCameras(self, origin):
 		self.updateCameraXZLocations(origin)
 		# Plot camera locations with their names
