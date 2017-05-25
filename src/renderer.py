@@ -53,6 +53,44 @@ class RendererODS():
 			raise RuntimeError('Camera collection is not initialized')
 
 
+	def renderCOPSOnly(self, ipd, output_image_dim, eye=-1, origin=[0, 0, 0]):
+		self.sanityCheck()
+		height = output_image_dim[0]
+		width = output_image_dim[1]
+		output_image = np.zeros((output_image_dim[0], output_image_dim[1]), dtype='uint8')
+
+		camera_positions = self.camera_list.getCameraCentresXZ(origin)
+		viewing_circle_centre = self.camera_list.getViewingCircleCentre()
+		viewing_circle_radius = self.camera_list.getViewingCircleRadius()
+		# IPD cannot be greater than the radius of the viewing circle
+		if ipd > viewing_circle_radius:
+			raise RuntimeError('IPD cannot be greater than the radius of the viewing circle')
+
+		num_cameras = self.camera_list.getNumCameras()
+		
+		# Set COP for every camera and do other things before view interpolation.
+		for i in range(num_cameras):
+			theta = getAngle(viewing_circle_centre, camera_positions[i, :], ipd)
+			self.camera_list[i].setCOPRelativeAngleLeft(theta)
+			self.camera_list[i].setCOPRelativeAngleRight(theta)
+
+			xn_left = mapCameraToSphere(camera_positions[i, :], viewing_circle_centre, ipd, -1)
+			self.camera_list[i].setPositionInODSImageLeft(xn_left)
+			xn_right = mapCameraToSphere(camera_positions[i, :], viewing_circle_centre, ipd, 1)
+			self.camera_list[i].setPositionInODSImageRight(xn_right)
+
+			if eye is 1:
+				xn = xn_right
+			else:
+				xn = xn_left
+
+			col_index = int(unnormalizeX(xn, width))
+			output_image[:, col_index] = 127
+
+		return output_image
+
+
+
 	def visualizeProjectionCentres(self, output_image_dim):
 		self.sanityCheck()
 		height = output_image_dim[0]
@@ -68,7 +106,7 @@ class RendererODS():
 		skip_colors = int(255/num_cameras)
 		
 		for i in range(num_cameras):
-			xn = mapCameraToSphere(camera_positions[i, :], viewing_circle_centre, ipd, eye=1)
+			xn = mapCameraToSphere(camera_positions[i, :], viewing_circle_centre, ipd, eye=-1)
 			col_index = int(unnormalizeX(xn, width))
 			gray_scale = ((i+1)*skip_colors)
 			output_image[:, col_index] = np.uint8(gray_scale)

@@ -17,9 +17,16 @@ class Camera:
 		self.resolution = np.zeros((2, 1), dtype='int32')
 		self.fx = 0
 		self.fy = 0
+		self.fov_x = 0
 		self.favg = 0
 		self.cam_collection = None
 		self.init_complete = False
+		self.cop_col_left = 0
+		self.cop_col_right = 0
+		self.cop_rtheta_left = 0
+		self.cop_rtheta_right = 0
+		self.odsleft_xnorm = 0
+		self.odsright_xnorm = 0
 
 	def loadCameraFromYaml(self, yaml_calibration, cam_name):
 		self.camera_name = cam_name
@@ -29,6 +36,7 @@ class Camera:
 		intrinsics_vector = yaml_calibration[cam_name]['intrinsics']
 		self.intrinsics[0][0] = intrinsics_vector[0]
 		self.fx = intrinsics_vector[0]
+		self.fov_x = 2*np.arctan2(self.resolution[0], self.fx)
 		self.intrinsics[1][1] = intrinsics_vector[1]
 		self.fy = intrinsics_vector[1]
 		self.intrinsics[0][2] = intrinsics_vector[2]/self.resolution[0]
@@ -71,6 +79,52 @@ class Camera:
 		ray=np.dot(camera_extrinsics, ray_homogeneous)
 		#normalize ray again
 		return ray[0:3]/ray[3]
+
+	def getFieldOfView(self):
+		return self.fov_x
+
+	def getFieldOfViewInDegrees(self):
+		return radians2Degrees(self.fov_x)
+
+	def getIncidentColumn(self, theta, offsetByWidth=True):
+		if theta > (self.fov_x/2):
+			raise Warning('Theta is larger than the field of view. ')
+		
+		norm = np.tan(np.abs(theta))
+		if offsetByWidth:
+			norm = norm + 0.5
+		else:
+			norm = 0.5-norm
+		# Do not let values go beyond 0 and 1
+		np.clip(norm, 0.0, 1.0)
+		return unnormalizeX(norm, self.resolution[0])
+
+	def setCOPLeft(self, cop_left):
+		self.cop_col_left = cop_left
+
+	def setCOPRight(self, cop_right):
+		self.cop_col_right = cop_right
+
+	def setCOPRelativeAngleLeft(self, theta):
+		self.cop_rtheta_left = theta
+		self.cop_col_left = self.getIncidentColumn(theta, offsetByWidth=True)
+
+	def setCOPRelativeAngleRight(self, theta):
+		self.cop_rtheta_left = theta
+		self.cop_col_right = self.getIncidentColumn(theta, offsetByWidth=False)
+
+	def setPositionInODSImageLeft(self, xnorm):
+		self.odsleft_xnorm = xnorm
+
+	def setPositionInODSImageRight(self, xnorm):
+		self.odsright_xnorm = xnorm
+
+	def getPositionInODSImageLeft(self):
+		return self.odsleft_xnorm
+
+	def getPositionInODSImageRight(self):
+		return self.odsright_xnorm
+
 
 # end class Camera 
 
@@ -201,7 +255,6 @@ class CameraCollection():
 
 	def getNumCameras(self):
 		return self.num_cameras
-
 
 	def visualizeCameras(self, origin):
 		self.updateCameraXZLocations(origin)
