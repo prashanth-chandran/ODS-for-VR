@@ -130,7 +130,18 @@ class Camera:
 
 	def getPositionInODSImageRight(self):
 		return self.odsright_xnorm
-
+		
+	def getGlobalAngleOfPixel(self, cam_pos, pixel):
+		normalized_pixel_coord= [pixel[0],pixel[1],1]
+		global_coord=np.dot(inverse_intrinsics, normalized_pixel_coord)
+		cam_to_3d= global_coord-cam_position
+		cam_to_3d_xz=[cam_to_3d[0], cam_to_3d[2]]
+		norm=np.norm(cam_to_3d_xz)
+		normalized_cam_to_3d_xz=cam_to_3d_xz/norm
+		x_axis=[1,0]
+		dot=np.dot(normalized_cam_to_3d_xz, x_axis)
+		angle=np.arccos(dot)
+		
 
 # end class Camera 
 

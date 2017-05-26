@@ -97,6 +97,19 @@ class RendererODS():
 				# print(col_img)
 				image = self.image_list[i]
 				output_image[:, col_index, :] = image.getColumn(int(col_img))
+				
+		
+		
+		#view interpolation
+		vertical_pixel=0
+		for i in range(num_cameras):
+			inverse_intrinsics= self.camera_list[i].intrinsics_inverse
+			cam_position=camera_positions[i, :]
+			for j in range(width):
+				p=[j, vertical_pixel]
+				angle=self.camera_list[i].getGlobalAngle(self, cam_position, p)
+				
+
 
 		return output_image
 
