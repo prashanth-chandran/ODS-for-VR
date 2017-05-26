@@ -9,7 +9,9 @@ def thetaToNormalizedX(theta):
 	return (theta + np.pi)/(2*np.pi)
 
 def phiToNormalizedY(phi):
-	return ((np.pi/2) - phi)/np.pi
+	#return ((np.pi/2) - phi)/np.pi
+	#Sign change for normalization?
+	return ((np.pi/2) + phi)/np.pi
 
 def thetaPhiToNormalizedXY(theta, phi):
 	xn = thetaToNormalizedX(theta)
