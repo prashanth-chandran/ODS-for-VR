@@ -110,24 +110,24 @@ class RendererODS():
 			
 			x0=cam0.getCOPLeft(self)
 			tangent_pixel0=[x0, vertical_pixel]
-			theta_0=getGlobalAngle(cam0, cam_position0, tangent_pixel0)
+			theta_0=getGlobalAngleOfPixel(cam0, cam_position0, tangent_pixel0)
 			flow_0=computeOpticalFlow(tangent_pixel0)
 			tangent_pixel0_flow=[x0+flow_0[0], vertical_pixel]
-			theta_0_flow=getGlobalAngle(cam0, cam_position0, tangent_pixel0_flow)
+			theta_0_flow=getGlobalAngleOfPixel(cam0, cam_position0, tangent_pixel0_flow)
 			
 			x1=cam1.getCOP(self)
 			tangent_pixel0=[x1, vertical_pixel]
-			theta_1=getGlobalAngle(cam1, cam_position0, tangent_pixel1)
+			theta_1=getGlobalAngleOfPixel(cam1, cam_position0, tangent_pixel1)
 			flow_1=computeOpticalFlow(tangent_pixel1)
 			tangent_pixel1_flow=[x1+flow_1[0], vertical_pixel]
-			theta_1_flow=getGlobalAngle(cam1, cam_position1, tangent_pixel1_flow)
+			theta_1_flow=getGlobalAngleOfPixel(cam1, cam_position1, tangent_pixel1_flow)
 			
 			for j in range(tangent_pixel0:tangent_pixel1_flow):
 				p1=[j, vertical_pixel]
-				theta_a=getGlobalAngle(cam0, cam_position0, p)
+				theta_a=getGlobalAngleOfPixel(cam0, cam_position0, p)
 				flow_i=computeOpticalFlow(p1)
 				p2=[j+flow_i[0], vertical_pixel]
-				theta_b=getGlobalAngle(cam1 cam_position1, p)
+				theta_b=getGlobalAngleOfPixel(cam1 cam_position1, p)
 				
 				theta_p=linearInterpolation(theta_0, theta_1, theta_a, theta_b)
 				
