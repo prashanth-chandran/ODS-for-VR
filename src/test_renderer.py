@@ -36,7 +36,7 @@ def test_cameraRig_visualization():
 	print(cc[0].getIncidentColumn(degree2Radians(0)))
 	for i in range(cc.getNumCameras()):
 		print(cc[i].getFieldOfViewInDegrees())
-	# cc.visualizeCameras([0, 0, 0])
+	cc.visualizeCameras([0, 0, 0])
 
 
 def test_ODS_renderer():
@@ -75,7 +75,7 @@ def test_data_loader():
 def main():
 	# test_renderer()
 	test_ODS_renderer()
-	# test_cameraRig_visualization()
+	#test_cameraRig_visualization()
 	# test_data_loader()
 
 

@@ -108,28 +108,31 @@ class RendererODS():
 			cam_position0=camera_positions[i, :]
 			cam_position1=camera_positions[i+1, :]
 			
-			x0=cam0.getCOPLeft(self)
-			tangent_pixel0=[x0, vertical_pixel]
-			theta_0=getGlobalAngleOfPixel(cam0, cam_position0, tangent_pixel0)
-			flow_0=computeOpticalFlow(tangent_pixel0)
-			tangent_pixel0_flow=[x0+flow_0[0], vertical_pixel]
-			theta_0_flow=getGlobalAngleOfPixel(cam0, cam_position0, tangent_pixel0_flow)
+			relative_theta_0=cam0.getCOPRelativeAngleLeft
+			relative_theta_1=cam1.getCOPRelativeAngleLeft
 			
-			x1=cam1.getCOP(self)
-			tangent_pixel0=[x1, vertical_pixel]
-			theta_1=getGlobalAngleOfPixel(cam1, cam_position0, tangent_pixel1)
-			flow_1=computeOpticalFlow(tangent_pixel1)
-			tangent_pixel1_flow=[x1+flow_1[0], vertical_pixel]
-			theta_1_flow=getGlobalAngleOfPixel(cam1, cam_position1, tangent_pixel1_flow)
+#			x0=cam0.getCOPLeft(self)
+#			tangent_pixel0=[x0, vertical_pixel]
+#			theta_0=cam0.getGlobalAngleOfPixel(cam_position0, tangent_pixel0)
+#			flow_0=computeOpticalFlow(tangent_pixel0)
+#			tangent_pixel0_flow=[x0+flow_0[0], vertical_pixel]
+#			theta_0_flow=cam0.getGlobalAngleOfPixel(cam_position0, tangent_pixel0_flow)
 			
-			for j in range(tangent_pixel0:tangent_pixel1_flow):
-				p1=[j, vertical_pixel]
-				theta_a=getGlobalAngleOfPixel(cam0, cam_position0, p)
-				flow_i=computeOpticalFlow(p1)
-				p2=[j+flow_i[0], vertical_pixel]
-				theta_b=getGlobalAngleOfPixel(cam1 cam_position1, p)
-				
-				theta_p=linearInterpolation(theta_0, theta_1, theta_a, theta_b)
+#			x1=cam1.getCOP(self)
+#			tangent_pixel0=[x1, vertical_pixel]
+#			theta_1=cam1.getGlobalAngleOfPixel(cam_position0, tangent_pixel1)
+#			flow_1=computeOpticalFlow(tangent_pixel1)
+#			tangent_pixel1_flow=[x1+flow_1[0], vertical_pixel]
+#			theta_1_flow=cam1.getGlobalAngleOfPixel(cam_position1, tangent_pixel1_flow)
+			
+#			for j in range(tangent_pixel0:tangent_pixel1_flow):
+#				p1=[j, vertical_pixel]
+#				theta_a=cam0.getGlobalAngleOfPixel(cam_position0, p)
+#				flow_i=computeOpticalFlow(p1)
+#				p2=[j+flow_i[0], vertical_pixel]
+#				theta_b=cam1.getGlobalAngleOfPixel(cam_position1, p)
+#				
+#				theta_p=linearInterpolation(theta_0, theta_1, theta_a, theta_b)
 				
 
 

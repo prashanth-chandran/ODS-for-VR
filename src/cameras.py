@@ -49,6 +49,7 @@ class Camera:
 		try:
 			self.extrinsics_relative = yaml_calibration[cam_name]['T_cn_cnm1']
 		except Exception as e:
+			#shift=[[0, 0, 0, 1], [0, 0, 0, 0], [0, 0, 0, 1],[0, 0, 0, 0]]
 			self.extrinsics_relative = np.identity(4, dtype='float32')
 		self.distortion = yaml_calibration[cam_name]['distortion_coeffs']
 
@@ -116,9 +117,15 @@ class Camera:
 		self.cop_col_left = self.getIncidentColumn(theta, offsetByWidth=True)
 
 	def setCOPRelativeAngleRight(self, theta):
-		self.cop_rtheta_left = theta
+		self.cop_rtheta_right = theta
 		self.cop_col_right = self.getIncidentColumn(theta, offsetByWidth=False)
+		
+	def getCOPRelativeAngleLeft(self):
+		return self.cop_rtheta_left
 
+	def getCOPRelativeAngleRight(self):
+		return self.cop_rtheta_right
+		
 	def setPositionInODSImageLeft(self, xnorm):
 		self.odsleft_xnorm = xnorm
 
@@ -132,16 +139,10 @@ class Camera:
 		return self.odsright_xnorm
 		
 	def getGlobalAngleOfPixel(self, cam_pos, pixel):
-		global_coord=getRayForPixel(self, pixel[0], pixel[1])	
-		global_xz=[global_coord[0], global_coord[2]]
-		cam_to_3d_xz= global_xz-cam_pos
-		norm=np.norm(cam_to_3d_xz)
-		normalized_cam_to_3d_xz=cam_to_3d_xz/norm
-		x_axis=[1,0]
-		dot=np.dot(normalized_cam_to_3d_xz, x_axis)
-		angle=np.arccos(dot)
-		
-	def getTangentAngle(self,cam_pos)
+		cam_coord=getRayForPixel(self, pixel[0], pixel[1])	
+		world_coord_homo=np.dot(self.getExtrinsics, cam_coord)
+		homo=world_coord_homo/world_coord_homo[3]
+		world_coord=[homo[0], homo[1], homo[2]]
 		
 
 # end class Camera 
