@@ -45,6 +45,13 @@ class RendererODS():
 		diff_01=theta_0-theta_1
 		
 		theta_p=((diff_b1*theta_0)+(diff_0a*theta_1))/(diff_ba+diff_01)
+		return theta_p
+		
+	def weightedAverage(self, rtheta_0, rtheta_1, rtheta_a, rtheta_b, theta_0, theta_1):
+		f = (rtheta_a/rtheta_0)*theta_0
+		s = (rtheta_b/rtheta_1)*theta_1
+		theta_p=(f+s)/2
+		return theta_p
 
 	def setCameraList(self, camera_collection):
 		self.camera_list = camera_collection
@@ -133,12 +140,18 @@ class RendererODS():
 			image1=self.image_list[index1].getImage()
 			
 			image_width=int(cam0.resolution[0])
+			#print("image width")
+			#print(image_width)
 			image_height=int(cam0.resolution[1])
 			
-			relative_theta_0=cam0.getCOPRelativeAngleLeft
-			relative_theta_1=cam1.getCOPRelativeAngleLeft
+			relative_theta_0=cam0.getCOPRelativeAngleLeft()
+			relative_theta_1=cam1.getCOPRelativeAngleLeft()
+			
+			theta_0=normalizedXToTheta(cam0.getPositionInODSImageLeft())
+			theta_1=normalizedXToTheta(cam1.getPositionInODSImageLeft())
 			
 			x0=int(round(cam0.getCOPLeft()[0]))
+			print("x0: ")
 			print(x0)
 #			tangent_pixel0=[x0, vertical_pixel]
 #			theta_0=cam0.getGlobalAngleOfPixel(cam_position0, tangent_pixel0)
@@ -160,9 +173,21 @@ class RendererODS():
 				sum=np.sum(col_flows)
 				avg=int(sum/image_height)
 				#print(avg)
-				j_flowed=j+avg
+				j_flowed=j+np.linalg.norm(avg)
 				
 				relative_theta_b=getRelativeAngle(cam1.resolution[0], cam_position1, j_flowed, cam1.favg)
+				
+				theta_p=self.weightedAverage(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1)
+				
+				x_i=thetaToNormalizedX(theta_p)
+				#print("x_i: ")
+				#print(x_i)
+				col_i=int(unnormalizeX(x_i, width))
+				#print("col_i: ")
+				#print(col_i)
+				image = self.image_list[index0]
+				if col_i<width:
+					output_image[:, col_i, :] =image.getColumn(j)
 				
 #				p1=[j, vertical_pixel]
 #				theta_a=cam0.getGlobalAngleOfPixel(cam_position0, p)

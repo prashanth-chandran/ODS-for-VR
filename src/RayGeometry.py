@@ -7,7 +7,10 @@ def normalizedXYToThetaPhi(xn, yn):
 
 def thetaToNormalizedX(theta):
 	return (theta + np.pi)/(2*np.pi)
-
+	
+def normalizedXToTheta(X):
+	return  (X*(2*np.pi))-np.pi 
+	
 def phiToNormalizedY(phi):
 	#return ((np.pi/2) - phi)/np.pi
 	#Sign change for normalization?
