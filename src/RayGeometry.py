@@ -74,9 +74,16 @@ def getAngle(centre, cam_pos, ipd):
 
 def getRelativeAngle(width, cam_pos, x, focal_length):
 	a = np.linalg.norm(x-(width/2))
+	#print("a:")
+	#print(a)
 	b=focal_length
+	#print("b:")
+	#print(b)
 	#return np.arctan2(ver, hor)
-	return np.arctan2(a,b)
+	theta=np.arctan2(a,b)
+	#print("theta:")
+	#print(theta)
+	return theta
 
 def genPointOnViewingCircle(centre, cam_pos, ipd, eye=1):
 	angle = getAngle(np.asarray(centre), np.asarray(cam_pos), ipd)
