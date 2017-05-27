@@ -53,7 +53,7 @@ def test_ODS_renderer():
 	rods.setImageList(ic0)
 	rods.setCameraList(cc)
 	# vis_image = rods.visualizeProjectionCentres([255, 800])
-	vis_image = rods.renderCOPSOnly(0.045/2, [480, 800])
+	vis_image = rods.renderCOPSOnly(0.045/2, [480, 960])
 	cv2.imshow('Projection centres: ', vis_image)
 	cv2.waitKey(0)
 

@@ -46,6 +46,21 @@ class RendererODS():
 		
 		theta_p=((diff_b1*theta_0)+(diff_0a*theta_1))/(diff_ba+diff_01)
 		return theta_p
+	
+	def ourLinearInterpolation(self, rtheta_0, rtheta_1, rtheta_a, rtheta_b, theta_0, theta_1):
+		diff_b1=rtheta_b-rtheta_1
+		diff_0a=rtheta_0-rtheta_a
+		diff_ba=rtheta_b-rtheta_a
+		diff_01=rtheta_0-rtheta_1
+		
+		theta_p=((diff_b1*theta_0)+(diff_0a*theta_1))/(diff_ba+diff_01)
+		return theta_p
+	
+	def ourInterpolation(self, rtheta_0, rtheta_1, rtheta_a, rtheta_b, theta_0, theta_1):
+		factor1=rtheta_a/rtheta_0
+		factor2=rtheta_b/rtheta_1
+		theta_p =((factor1*theta_0)+(factor2*theta_1))/(factor1*factor2)
+		return theta_p
 		
 	def weightedAverage(self, rtheta_0, rtheta_1, rtheta_a, rtheta_b, theta_0, theta_1):
 		f = (rtheta_a/rtheta_0)*theta_0
@@ -69,6 +84,9 @@ class RendererODS():
 		self.sanityCheck()
 		height = output_image_dim[0]
 		width = output_image_dim[1]
+		print("ODS width")
+		print(width)
+		
 		output_image = np.zeros((output_image_dim[0], output_image_dim[1], 3), dtype='uint8')
 
 		camera_positions = self.camera_list.getCameraCentresXZ(origin)
@@ -108,10 +126,10 @@ class RendererODS():
 				# print(col_img)
 				image = self.image_list[i]
 				output_image[:, col_index, :] = image.getColumn(int(col_img))
-				
-		image_w=752
-		image_h=480
+
 		cameras=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
+		#cameras=[0, 1, 2, 3, 8, 9, 6, 7, 4, 5, 0]
+
 		flows=[]
 		for i in range(num_cameras):	
 			index0=cameras[i]
@@ -127,8 +145,9 @@ class RendererODS():
 		print(all_flows.shape)
 		
 		#view interpolation
-		vertical_pixel=0
-		for i in range(num_cameras):
+		#vertical_pixel=0
+		
+		for i in range(1):
 			index0=cameras[i]
 			index1=cameras[i+1]
 			cam0=self.camera_list[index0]
@@ -140,8 +159,7 @@ class RendererODS():
 			image1=self.image_list[index1].getImage()
 			
 			image_width=int(cam0.resolution[0])
-			#print("image width")
-			#print(image_width)
+			
 			image_height=int(cam0.resolution[1])
 			
 			relative_theta_0=cam0.getCOPRelativeAngleLeft()
@@ -153,6 +171,10 @@ class RendererODS():
 			x0=int(round(cam0.getCOPLeft()[0]))
 			print("x0: ")
 			print(x0)
+			
+			x1=int(round(cam1.getCOPLeft()[0]))
+			print("x1: ")
+			print(x1)
 #			tangent_pixel0=[x0, vertical_pixel]
 #			theta_0=cam0.getGlobalAngleOfPixel(cam_position0, tangent_pixel0)
 #			flow_0=computeOpticalFlow(tangent_pixel0)
@@ -177,7 +199,9 @@ class RendererODS():
 				
 				relative_theta_b=getRelativeAngle(cam1.resolution[0], cam_position1, j_flowed, cam1.favg)
 				
-				theta_p=self.weightedAverage(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1)
+				#theta_p=self.weightedAverage(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1)
+				theta_p=self.ourInterpolation(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1)
+				#theta_p=self.ourLinearInterpolation(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1)
 				
 				x_i=thetaToNormalizedX(theta_p)
 				#print("x_i: ")
@@ -186,18 +210,34 @@ class RendererODS():
 				#print("col_i: ")
 				#print(col_i)
 				image = self.image_list[index0]
-				if col_i<width:
+				if 0<col_i<width:
 					output_image[:, col_i, :] =image.getColumn(j)
-				
-#				p1=[j, vertical_pixel]
-#				theta_a=cam0.getGlobalAngleOfPixel(cam_position0, p)
-#				flow_i=computeOpticalFlow(p1)
-#				p2=[j+flow_i[0], vertical_pixel]
-#				theta_b=cam1.getGlobalAngleOfPixel(cam_position1, p)
-#				
-#				theta_p=linearInterpolation(theta_0, theta_1, theta_a, theta_b)
-				
+	
 
+			for j in range(x1, image_width):
+				relative_theta_a=getRelativeAngle(cam1.resolution[0], cam_position1, j, cam1.favg)
+				
+				col_flows =all_flows[index0, :,  j, 1]
+				sum=np.sum(col_flows)
+				avg=int(sum/image_height)
+				#print(avg)
+				j_flowed=j-np.linalg.norm(avg)
+				
+				relative_theta_b=getRelativeAngle(cam0.resolution[0], cam_position0, j_flowed, cam0.favg)
+				
+				#theta_p=self.weightedAverage(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1)
+				theta_p=self.ourInterpolation(relative_theta_1, relative_theta_0, relative_theta_a, relative_theta_b, theta_1, theta_0)
+				#theta_p=self.ourLinearInterpolation(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1)
+				
+				x_i=thetaToNormalizedX(theta_p)
+				#print("x_i: ")
+				#print(x_i)
+				col_i=int(unnormalizeX(x_i, width))
+				#print("col_i: ")
+				#print(col_i)
+				image = self.image_list[index1]
+				if 0<col_i<width:
+					output_image[:, col_i, :] =image.getColumn(j)
 
 		return output_image
 
