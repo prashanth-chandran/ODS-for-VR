@@ -91,7 +91,13 @@ class Camera:
         if theta > (self.fov_x/2):
             raise Warning('Theta is larger than the field of view. ')
 
-        norm = np.tan(np.abs(theta))
+        #norm = np.tan(np.abs(theta))
+        #print("average focal length")
+        #print(self.favg)
+        norm=(theta*self.fov_x)/self.resolution[0]
+        print("norm")
+        print(norm)
+		#norm = (np.tan(np.abs(theta))*self.favg)
         if offsetByWidth:
             norm = norm + 0.5
         else:
@@ -99,6 +105,7 @@ class Camera:
         # Do not let values go beyond 0 and 1
         np.clip(norm, 0.0, 1.0)
         return unnormalizeX(norm, self.resolution[0])
+
 
     def setCOPLeft(self, cop_left):
         self.cop_col_left = cop_left
@@ -138,11 +145,7 @@ class Camera:
     def getPositionInODSImageRight(self):
         return self.odsright_xnorm
 
-    def getGlobalAngleOfPixel(self, cam_pos, pixel):
-        cam_coord=getRayForPixel(self, pixel[0], pixel[1])
-        world_coord_homo=np.dot(self.getExtrinsics, cam_coord)
-        homo=world_coord_homo/world_coord_homo[3]
-        world_coord=[homo[0], homo[1], homo[2]]
+
 
 
 # end class Camera 
