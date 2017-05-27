@@ -102,20 +102,18 @@ class RendererODS():
 				image = self.image_list[i]
 				output_image[:, col_index, :] = image.getColumn(int(col_img))
 				
-		
+		image_w=752
+		image_h=480
 		cameras=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
 		flows=[]
 		for i in range(num_cameras):	
 			index0=cameras[i]
 			index1=cameras[i+1]
 			
-			image0=self.image_list[index0]
-			i_0=image0.getImage()
+			image0=self.image_list[index0].getImage()			
+			image1=self.image_list[index1].getImage()
 			
-			image1=self.image_list[index1]
-			i_1=image1.getImage()
-			
-			flow_i=oF.calculateFlow(i_0, i_1)
+			flow_i=oF.calculateFlow(image0, image1)
 			flows.append(flow_i)
 		
 		all_flows=np.asarray(flows)
@@ -131,10 +129,17 @@ class RendererODS():
 			cam_position0=camera_positions[index0, :]
 			cam_position1=camera_positions[index1, :]
 			
+			image0=self.image_list[index0].getImage()			
+			image1=self.image_list[index1].getImage()
+			
+			image_width=int(cam0.resolution[0])
+			image_height=int(cam0.resolution[1])
+			
 			relative_theta_0=cam0.getCOPRelativeAngleLeft
 			relative_theta_1=cam1.getCOPRelativeAngleLeft
 			
-#			x0=cam0.getCOPLeft(self)
+			x0=int(round(cam0.getCOPLeft()[0]))
+			print(x0)
 #			tangent_pixel0=[x0, vertical_pixel]
 #			theta_0=cam0.getGlobalAngleOfPixel(cam_position0, tangent_pixel0)
 #			flow_0=computeOpticalFlow(tangent_pixel0)
@@ -148,9 +153,16 @@ class RendererODS():
 #			tangent_pixel1_flow=[x1+flow_1[0], vertical_pixel]
 #			theta_1_flow=cam1.getGlobalAngleOfPixel(cam_position1, tangent_pixel1_flow)
 			
-#			for j in range(tangent_pixel0:tangent_pixel1_flow):
-#				relative_theta_a=getRelativeAngle(cam0.resolution[0], cam_position0, j, cam0.favg)
+			for j in range(x0, image_width):
+				relative_theta_a=getRelativeAngle(cam0.resolution[0], cam_position0, j, cam0.favg)
 				
+				col_flows =all_flows[index0, :,  j, 1]
+				sum=np.sum(col_flows)
+				avg=int(sum/image_height)
+				#print(avg)
+				j_flowed=j+avg
+				
+				relative_theta_b=getRelativeAngle(cam1.resolution[0], cam_position1, j_flowed, cam1.favg)
 				
 #				p1=[j, vertical_pixel]
 #				theta_a=cam0.getGlobalAngleOfPixel(cam_position0, p)
