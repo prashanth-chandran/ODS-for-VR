@@ -66,8 +66,14 @@ def degree2Radians(degree):
 def getAngle(centre, cam_pos, ipd):
 	hor = np.linalg.norm(centre-cam_pos)
 	ver = ipd/2
-	return np.arctan2(ver, hor)
+	#return np.arctan2(ver, hor)
+	return np.arcsin(ver/hor)
 
+def getRelativeAngle(width, cam_pos, x, focal_length):
+	a = np.linalg.norm(x-(width/2))
+	b=focal_length
+	#return np.arctan2(ver, hor)
+	return np.arctan2(a,b)
 
 def genPointOnViewingCircle(centre, cam_pos, ipd, eye=1):
 	angle = getAngle(np.asarray(centre), np.asarray(cam_pos), ipd)

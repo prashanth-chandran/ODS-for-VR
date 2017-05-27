@@ -1,6 +1,8 @@
 import numpy as np 
+
 from cameras import *
 from RayGeometry import *
+from viewSynth import *
 
 class Renderer():
 	def __init__(self):
@@ -71,6 +73,8 @@ class RendererODS():
 
 		num_cameras = self.camera_list.getNumCameras()
 		
+		oF =OpticalFlowCalculator()
+		
 		# Set COP for every camera and do other things before view interpolation.
 		for i in range(num_cameras):
 			theta = getAngle(viewing_circle_centre, camera_positions[i, :], ipd)
@@ -99,14 +103,33 @@ class RendererODS():
 				output_image[:, col_index, :] = image.getColumn(int(col_img))
 				
 		
+		cameras=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
+		flows=[]
+		for i in range(num_cameras):	
+			index0=cameras[i]
+			index1=cameras[i+1]
+			
+			image0=self.image_list[index0]
+			i_0=image0.getImage()
+			
+			image1=self.image_list[index1]
+			i_1=image1.getImage()
+			
+			flow_i=oF.calculateFlow(i_0, i_1)
+			flows.append(flow_i)
+		
+		all_flows=np.asarray(flows)
+		print(all_flows.shape)
 		
 		#view interpolation
 		vertical_pixel=0
 		for i in range(num_cameras):
-			cam0=self.camera_list[i]
-			cam1=self.camera_list[i+1]
-			cam_position0=camera_positions[i, :]
-			cam_position1=camera_positions[i+1, :]
+			index0=cameras[i]
+			index1=cameras[i+1]
+			cam0=self.camera_list[index0]
+			cam1=self.camera_list[index1]
+			cam_position0=camera_positions[index0, :]
+			cam_position1=camera_positions[index1, :]
 			
 			relative_theta_0=cam0.getCOPRelativeAngleLeft
 			relative_theta_1=cam1.getCOPRelativeAngleLeft
@@ -126,6 +149,9 @@ class RendererODS():
 #			theta_1_flow=cam1.getGlobalAngleOfPixel(cam_position1, tangent_pixel1_flow)
 			
 #			for j in range(tangent_pixel0:tangent_pixel1_flow):
+#				relative_theta_a=getRelativeAngle(cam0.resolution[0], cam_position0, j, cam0.favg)
+				
+				
 #				p1=[j, vertical_pixel]
 #				theta_a=cam0.getGlobalAngleOfPixel(cam_position0, p)
 #				flow_i=computeOpticalFlow(p1)
