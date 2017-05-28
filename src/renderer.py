@@ -297,7 +297,7 @@ class RendererODS():
 				# camera's extrinsics matrix
 				global_ray = np.dot(self.camera_list[i].extrinsics_absolute, ray)
 				# Store the XZ co-ordinates of the global ray separately for easy processing
-				global_ray_xz = np.asarray([global_ray[0], global_ray[1]])
+				global_ray_xz = np.asarray([global_ray[0], global_ray[2]])
 				# Find the angle for this ray in the global frame of reference
 				theta_ray = mapPointToPanaromaAngle(viewing_circle_centre, global_ray_xz, ipd, eye)
 				# Find the normalized column co-ordinate for this ray in the global panaroma
