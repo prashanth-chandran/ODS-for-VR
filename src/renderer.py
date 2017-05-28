@@ -393,18 +393,16 @@ class RendererODS():
 				image = self.image_list[i]
 				output_image[:, col_index, :] = image.getColumn(int(col_img))
 
-		cameras=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
+		#cameras=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
 
 		#cameras=[0, 1, 2, 3, 8, 9, 6, 7, 4, 5, 0]
 
-		#flows=[]
-		#for i in range(num_cameras):	
-
-		# cameras=[0, 1, 2, 3, 8, 9, 6, 7, 4, 5, 0]
+		cameras=[0, 5, 4, 7, 6, 9, 8, 3, 2, 1, 0]
 
 		flows=[]
-		hahacams = 9
-		for i in range(1,hahacams):	
+		
+		hahacams = 10
+		for i in range(hahacams):	
 
 			index0=cameras[i]
 			index1=cameras[i+1]
@@ -424,7 +422,7 @@ class RendererODS():
 
 		#for i in range(num_cameras):
 
-		for i in range(1, hahacams-1):
+		for i in range(hahacams):
 
 			index0=cameras[i]
 			index1=cameras[i+1]
@@ -459,8 +457,8 @@ class RendererODS():
 			
 			
 			
-			# x0=int(round(cam0.getCOPLeft()[0]))
-			x0=int(round(cam0.getCOPLeft()))
+			x0=int(round(cam0.getCOPLeft()[0]))
+			#x0=int(round(cam0.getCOPLeft()))
 			print('x0: ', x0)
 			print(x0)
 			print('Normalized Position x0: ', cam0.getPositionInODSImageLeft())
@@ -472,8 +470,8 @@ class RendererODS():
 			#x0_flowed=x0+np.abs(avg)
 			#relative_theta_0_cam1=getRelativeAngle(cam0.resolution[0], cam_position0, x0_flowed, cam0.favg, cam0.getFieldOfView())
 		
-			# x1=int(round(cam1.getCOPLeft()[0]))
-			x1=int(round(cam1.getCOPLeft()))
+			x1=int(round(cam1.getCOPLeft()[0]))
+			#x1=int(round(cam1.getCOPLeft()))
 			print('x1: ', x1)
 			print(x1)
 			print( 'Normalized Position x0: ', cam1.getPositionInODSImageLeft())
@@ -489,7 +487,8 @@ class RendererODS():
 			print('FOV Cam: ', radians2Degrees(field_of_view))
 
 
-			for j in range(x0+1, image_width):
+			#for j in range(x0+1, image_width):
+			for j in range(0, x0):
 				#relative_theta_a=getRelativeAngle(cam0.resolution[0], cam_position0, j, cam0.favg, cam0.getFieldOfView())
 				ray_a = cam0.getRayForPixel(j, 0)
 
@@ -499,12 +498,13 @@ class RendererODS():
 				global_ray_a_xz=np.asarray([global_ray_a[0], global_ray_a[2]])
 				theta_a = mapPointToPanaromaAngle(global_ray_a_xz, viewing_circle_centre, ipd, eye)
 				
-				col_flows =all_flows[index0, :,  j, 1]
+				#col_flows =all_flows[index0, :,  j, 1]
+				col_flows =all_flows[0, :,  j, 1]
 				sum=np.sum(col_flows)
 				avg=int(sum/image_height)
 				# print(avg)
 				# j_flowed=j-np.abs(avg)
-				j_flowed = j + avg
+				j_flowed = j +avg
 				
 				ray_b = cam1.getRayForPixel(j_flowed, 0)
 				ray_b = unit_vector(ray_b)
