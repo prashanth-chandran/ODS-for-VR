@@ -290,7 +290,7 @@ class RendererODS():
 
 			col_index = int(unnormalizeX(xn, pan_width))
 			# Map this camera to an angle on the viewing circle.
-			cam_theta = mapPointToPanaromaAngle(viewing_circle_centre, camera_positions[i, :], ipd, eye)
+			cam_theta = mapPointToPanaromaAngle(camera_positions[i, :], viewing_circle_centre, ipd, eye)
 			print('camera ', i, 'maps to: ', 'angle: ', radians2Degrees(cam_theta), 'column: ',  col_index)
 			
 			print('Rendering camera ', i)
@@ -353,7 +353,7 @@ class RendererODS():
 		oF =OpticalFlowCalculator()
 		
 		# Set COP for every camera and do other things before view interpolation.
-		for i in range(1, 3):
+		for i in range(num_cameras):
 			theta = getAngle(viewing_circle_centre, camera_positions[i, :], ipd)
 			self.camera_list[i].setCOPRelativeAngleLeft(theta)
 			self.camera_list[i].setCOPRelativeAngleRight(theta)
@@ -379,11 +379,11 @@ class RendererODS():
 				image = self.image_list[i]
 				output_image[:, col_index, :] = image.getColumn(int(col_img))
 
-		#cameras=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
-		cameras=[0, 1, 2, 3, 8, 9, 6, 7, 4, 5, 0]
+		cameras=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
+		#cameras=[0, 1, 2, 3, 8, 9, 6, 7, 4, 5, 0]
 
 		flows=[]
-		for i in range(1,3):	
+		for i in range(num_cameras):	
 			index0=cameras[i]
 			index1=cameras[i+1]
 			
@@ -399,7 +399,7 @@ class RendererODS():
 		#view interpolation
 		#vertical_pixel=0
 		
-		for i in range(1,2):
+		for i in range(num_cameras):
 			index0=cameras[i]
 			index1=cameras[i+1]
 			cam0=self.camera_list[index0]
@@ -417,10 +417,10 @@ class RendererODS():
 			relative_theta_0=cam0.getCOPRelativeAngleLeft()
 			relative_theta_1=cam1.getCOPRelativeAngleLeft()
 			
-			#theta_0=normalizedXToTheta(cam0.getPositionInODSImageLeft())
-			#theta_1=normalizedXToTheta(cam1.getPositionInODSImageLeft())
-			theta_0=mapPointToPanaromaAngle(viewing_circle_centre, cam_position0, ipd, eye)
-			theta_1=mapPointToPanaromaAngle(viewing_circle_centre, cam_position1, ipd, eye)
+			theta_0=normalizedXToTheta(cam0.getPositionInODSImageLeft())
+			theta_1=normalizedXToTheta(cam1.getPositionInODSImageLeft())
+			#theta_0=mapPointToPanaromaAngle(viewing_circle_centre, cam_position0, ipd, eye)
+			#theta_1=mapPointToPanaromaAngle(viewing_circle_centre, cam_position1, ipd, eye)
 			
 			theta_0_degree=radians2Degrees(theta_0)+180
 			theta_1_degree=radians2Degrees(theta_1)+180
@@ -435,37 +435,38 @@ class RendererODS():
 			x0=int(round(cam0.getCOPLeft()[0]))
 			print('x0: ', x0)
 			print(x0)
-			print('Normalized Position: ', cam0.getPositionInODSImageLeft())
-			col0_flows =all_flows[index0, :,  x0, 1]
-			sum=np.sum(col0_flows)
-			avg=int(sum/image_height)
+			print('Normalized Position x0: ', cam0.getPositionInODSImageLeft())
+			
+			#col0_flows =all_flows[index0, :,  x0, 1]
+			#sum=np.sum(col0_flows)
+			#avg=int(sum/image_height)
 			#print(avg)
-			x0_flowed=x0+np.abs(avg)
-			relative_theta_0_cam1=getRelativeAngle(cam0.resolution[0], cam_position0, x0_flowed, cam0.favg, cam0.getFieldOfView())
+			#x0_flowed=x0+np.abs(avg)
+			#relative_theta_0_cam1=getRelativeAngle(cam0.resolution[0], cam_position0, x0_flowed, cam0.favg, cam0.getFieldOfView())
 		
 			x1=int(round(cam1.getCOPLeft()[0]))
 			print('x1: ', x1)
 			print(x1)
-			# print(unnormalizeX(cam1.getPositionInODSImageLeft(), width))
-			col1_flows =all_flows[index0, :,  x1, 1]
-			sum=np.sum(col1_flows)
-			avg=int(sum/image_height)
+			print( 'Normalized Position x0: ', cam1.getPositionInODSImageLeft())
+			#col1_flows =all_flows[index0, :,  x1, 1]
+			#sum=np.sum(col1_flows)
+			#avg=int(sum/image_height)
 			#print(avg)
-			x1_flowed=x1+np.abs(avg)
-			relative_theta_1_cam0=getRelativeAngle(cam1.resolution[0], cam_position1, x1_flowed, cam1.favg, cam1.getFieldOfView())
+			#x1_flowed=x1+np.abs(avg)
+			#relative_theta_1_cam0=getRelativeAngle(cam1.resolution[0], cam_position1, x1_flowed, cam1.favg, cam1.getFieldOfView())
 			
 			#print("\n")
 			field_of_view = self.camera_list[i].fov_x
 			print('FOV Cam: ', radians2Degrees(field_of_view))
 
-			for j in range(x0, image_width):
+			for j in range(nc):
 				#relative_theta_a=getRelativeAngle(cam0.resolution[0], cam_position0, j, cam0.favg, cam0.getFieldOfView())
-				ray_a = cam0.getRayForPixel(0,j)
+				ray_a = cam0.getRayForPixel(j,0)
 				ray_a = unit_vector(ray_a)
 				ray_a=np.append(ray_a,1)
 				global_ray_a=np.dot(cam0.extrinsics_absolute, ray_a)
 				global_ray_a_xz=np.asarray([global_ray_a[0], global_ray_a[2]])
-				theta_a = mapPointToPanaromaAngle(viewing_circle_centre, global_ray_a_xz, ipd, eye)
+				theta_a = mapPointToPanaromaAngle(global_ray_a_xz, viewing_circle_centre, ipd, eye)
 				
 				col_flows =all_flows[index0, :,  j, 1]
 				sum=np.sum(col_flows)
@@ -478,16 +479,17 @@ class RendererODS():
 				ray_b=np.append(ray_b,1)
 				global_ray_b=np.dot(cam1.extrinsics_absolute, ray_b)
 				global_ray_b_xz=np.asarray([global_ray_b[0], global_ray_b[2]])
-				theta_b = mapPointToPanaromaAngle(viewing_circle_centre, global_ray_b_xz, ipd, eye)
+				theta_b = mapPointToPanaromaAngle(global_ray_b_xz, viewing_circle_centre, ipd, eye)
+				
+				theta_a_degree=radians2Degrees(theta_a)+180
+				theta_b_degree=radians2Degrees(theta_b)+180
+				
 				
 				print("theta_a")
 				print(theta_a)
 				print("theta_b")
 				print(theta_b)
 				
-				
-				theta_a_degree=radians2Degrees(theta_a)+180
-				theta_b_degree=radians2Degrees(theta_b)+180
 				
 				#relative_theta_b=getRelativeAngle(cam1.resolution[0], cam_position1, j_flowed, cam1.favg, cam1.getFieldOfView())
 				#theta_p=self.weightedAverage(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1)
