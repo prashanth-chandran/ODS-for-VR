@@ -71,18 +71,14 @@ def getAngle(centre, cam_pos, ipd):
 	ver = ipd/2
 	return np.arcsin(ver/hor)
 
-
-def getRelativeAngle(width, cam_pos, x, focal_length):
-	a = np.linalg.norm(x-(width/2))
-	#print("a:")
-	#print(a)
-	b=focal_length
-	#print("b:")
-	#print(b)
+def getRelativeAngle(width, cam_pos, x, focal_length, fov):
+	#a = np.abs(x-(width/2))
+	#b=focal_length
 	#return np.arctan2(ver, hor)
-	theta=np.arctan2(a,b)
+	#theta=np.arctan2(a,b)
 	#print("theta:")
 	#print(theta)
+	theta=(width/fov)*x
 	return theta
 
 
@@ -145,6 +141,12 @@ def xzToTheta(xz, origin):
 	vec = xz-origin
 	# print(vec)
 	return np.arctan2(vec[1], vec[0])
+
+#def xzToTheta(xz, origin, ipd):
+#	vec2 = xz-origin
+#	crossing=[ipd/2, 0]
+#	vec1=crossing-origin
+#	theta=angle_between(vec1, vec2)
 
 
 def mapCameraToSphere(camera_pos, origin, ipd, eye=1):

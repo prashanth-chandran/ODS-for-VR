@@ -38,13 +38,14 @@ class RendererODS():
 		self.init_complete = False
 
 		
-	def linearInterpolation(theta_0, theta_1,theta_a, theta_b):
+	def linearInterpolation(self, theta_0, theta_1,theta_a, theta_b):
 		diff_b1=theta_b-theta_1
 		diff_0a=theta_0-theta_a
 		diff_ba=theta_b-theta_a
 		diff_01=theta_0-theta_1
 		
 		theta_p=((diff_b1*theta_0)+(diff_0a*theta_1))/(diff_ba+diff_01)
+		
 		return theta_p
 	
 	def ourLinearInterpolation(self, rtheta_0, rtheta_1, rtheta_a, rtheta_b, theta_0, theta_1):
@@ -53,13 +54,48 @@ class RendererODS():
 		diff_ba=rtheta_b-rtheta_a
 		diff_01=rtheta_0-rtheta_1
 		
+		diff=np.abs(theta_0-theta_1)
+		
 		theta_p=((diff_b1*theta_0)+(diff_0a*theta_1))/(diff_ba+diff_01)
+		#theta_p=((diff_b1*diff)+(diff_0a*diff))/(diff_ba+diff_01)
+		while theta_p<-np.pi:
+			theta_p=theta_p+np.pi
+			
+		theta_p=np.pi+theta_p
+			
 		return theta_p
 	
 	def ourInterpolation(self, rtheta_0, rtheta_1, rtheta_a, rtheta_b, theta_0, theta_1):
-		factor1=rtheta_a/rtheta_0
-		factor2=rtheta_b/rtheta_1
-		theta_p =(((1+factor1)*theta_0)+((1-factor2)*theta_1))/(factor1+factor2)
+		factor1=(rtheta_a-rtheta_0)/rtheta_0
+		factor2=(rtheta_b-rtheta_1)/rtheta_1
+		theta_p =(((1+factor1)*theta_0)+((1-factor2)*theta_1))/((factor1+factor2))
+		return theta_p
+		
+	def myInterpolation(self, rtheta_0, rtheta_1, rtheta_a, rtheta_b, theta_0, theta_1, rtheta_0_cam1, rtheta_1_cam0):
+		factor1=np.abs((rtheta_a-rtheta_0)/(rtheta_1_cam0-rtheta_0))
+		factor2=np.abs((rtheta_b-rtheta_1)/(rtheta_0_cam1-rtheta_1))
+		#factor1=np.abs((rtheta_a-rtheta_0)/(rtheta_0-rtheta_1_cam0))
+		#factor2=np.abs((rtheta_b-rtheta_1)/(rtheta_0_cam1-rtheta_1))
+		
+		#theta_p =(((1+factor1)*(theta_1-theta_0))+((1-factor2)*(theta_1-theta_0)))/((factor1+factor2))
+		#theta_p=(((factor2*(theta_0-theta_1))+theta_1)+(theta_0-(factor1*(theta_0-theta_1))))/(theta_0-theta_1)
+		
+		factor3=factor1*(theta_0-theta_1)
+		factor4=factor2*(theta_0-theta_1)
+		
+		diff=theta_0+theta_1
+		abs=np.abs(diff)
+		#theta_p=((theta_1+factor3)+(theta_1+factor4))/(factor2+factor1)	#theta_p=((theta_0-(factor1*diff))+((factor2*diff)+theta_1))/(((factor1*diff)+factor2*diff))
+		#theta_p=(((1-factor3)*theta_0)+((factor4*theta_1)))/(factor3+factor4)
+		#theta_p=theta_1+(factor2*diff)
+		theta_p=theta_0-(factor1*abs)
+		
+		while theta_p<-np.pi:
+			theta_p=theta_p+np.pi
+			
+		theta_p=np.pi+theta_p
+			
+		
 		return theta_p
 
 
@@ -89,8 +125,14 @@ class RendererODS():
 		
 	def weightedAverage(self, rtheta_0, rtheta_1, rtheta_a, rtheta_b, theta_0, theta_1):
 		f = (rtheta_a/rtheta_0)*theta_0
-		s = (rtheta_b/rtheta_1)*theta_1
+		s = (1-(rtheta_b/rtheta_1))*theta_1
 		theta_p=(f+s)/2
+		
+		while theta_p<-np.pi:
+			theta_p=theta_p+np.pi
+			
+		theta_p=np.pi+theta_p
+		
 		return theta_p
 
 	def setCameraList(self, camera_collection):
@@ -299,7 +341,7 @@ class RendererODS():
 		oF =OpticalFlowCalculator()
 		
 		# Set COP for every camera and do other things before view interpolation.
-		for i in range(num_cameras):
+		for i in range(2):
 			theta = getAngle(viewing_circle_centre, camera_positions[i, :], ipd)
 			self.camera_list[i].setCOPRelativeAngleLeft(theta)
 			self.camera_list[i].setCOPRelativeAngleRight(theta)
@@ -321,7 +363,7 @@ class RendererODS():
 			if self.image_list is None:
 				output_image[:, col_index, :] = [127, 127, 127]
 			else:
-				# print(col_img)
+				print(col_img)
 				image = self.image_list[i]
 				output_image[:, col_index, :] = image.getColumn(int(col_img))
 
@@ -329,7 +371,7 @@ class RendererODS():
 		cameras=[0, 1, 2, 3, 8, 9, 6, 7, 4, 5, 0]
 
 		flows=[]
-		for i in range(num_cameras):	
+		for i in range(2):	
 			index0=cameras[i]
 			index1=cameras[i+1]
 			
@@ -345,7 +387,7 @@ class RendererODS():
 		#view interpolation
 		#vertical_pixel=0
 		
-		for i in range(1,2):
+		for i in range(1):
 			index0=cameras[i]
 			index1=cameras[i+1]
 			cam0=self.camera_list[index0]
@@ -362,66 +404,64 @@ class RendererODS():
 			
 			relative_theta_0=cam0.getCOPRelativeAngleLeft()
 			relative_theta_1=cam1.getCOPRelativeAngleLeft()
-			print("relative theta 0")
-			print(relative_theta_0)
-			print("relative theta 1")
-			print(relative_theta_1)
-			print("\n")
 			
 			theta_0=normalizedXToTheta(cam0.getPositionInODSImageLeft())
 			theta_1=normalizedXToTheta(cam1.getPositionInODSImageLeft())
+			print("theta_0")
+			print(theta_0)
+			print("theta_1")
+			print(theta_1)
 			x0=int(round(cam0.getCOPLeft()[0]))
 			print('x0: ', x0)
-			# print('x0: ', cam0.getPositionInODSImageLeft())
+			print(x0)
 			print('Normalized Position: ', cam0.getPositionInODSImageLeft())
-			
+			col0_flows =all_flows[index0, :,  x0, 1]
+			sum=np.sum(col0_flows)
+			avg=int(sum/image_height)
+			#print(avg)
+			x0_flowed=x0+np.abs(avg)
+			relative_theta_0_cam1=getRelativeAngle(cam0.resolution[0], cam_position0, x0_flowed, cam0.favg, cam0.getFieldOfView())
+		
 			x1=int(round(cam1.getCOPLeft()[0]))
 			print('x1: ', x1)
-			# print('x1: ', cam1.getPositionInODSImageLeft())
+			print(x1)
 			# print(unnormalizeX(cam1.getPositionInODSImageLeft(), width))
-#			tangent_pixel0=[x0, vertical_pixel]
-#			theta_0=cam0.getGlobalAngleOfPixel(cam_position0, tangent_pixel0)
-#			flow_0=computeOpticalFlow(tangent_pixel0)
-#			tangent_pixel0_flow=[x0+flow_0[0], vertical_pixel]
-#			theta_0_flow=cam0.getGlobalAngleOfPixel(cam_position0, tangent_pixel0_flow)
+			col1_flows =all_flows[index0, :,  x1, 1]
+			sum=np.sum(col1_flows)
+			avg=int(sum/image_height)
+			#print(avg)
+			x1_flowed=x1+np.abs(avg)
+			relative_theta_1_cam0=getRelativeAngle(cam1.resolution[0], cam_position1, x1_flowed, cam1.favg, cam1.getFieldOfView())
 			
-#			x1=cam1.getCOP(self)
-#			tangent_pixel0=[x1, vertical_pixel]
-#			theta_1=cam1.getGlobalAngleOfPixel(cam_position0, tangent_pixel1)
-#			flow_1=computeOpticalFlow(tangent_pixel1)
-#			tangent_pixel1_flow=[x1+flow_1[0], vertical_pixel]
-#			theta_1_flow=cam1.getGlobalAngleOfPixel(cam_position1, tangent_pixel1_flow)
+			#print("\n")
 			field_of_view = self.camera_list[i].fov_x
 			print('FOV Cam: ', radians2Degrees(field_of_view))
 
 			for j in range(x0, image_width):
-				relative_theta_a=getRelativeAngle(cam0.resolution[0], cam_position0, j, cam0.favg)
+				relative_theta_a=getRelativeAngle(cam0.resolution[0], cam_position0, j, cam0.favg, cam0.getFieldOfView())
 				col_flows =all_flows[index0, :,  j, 1]
 				sum=np.sum(col_flows)
 				avg=int(sum/image_height)
 				# print(avg)
-				j_flowed=j-np.linalg.norm(avg)
-				relative_theta_b=getRelativeAngle(cam1.resolution[0], cam_position1, j_flowed, cam1.favg)
+				j_flowed=j+np.abs(avg)
+				relative_theta_b=getRelativeAngle(cam1.resolution[0], cam_position1, j_flowed, cam1.favg, cam1.getFieldOfView())
 				#theta_p=self.weightedAverage(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1)
-				theta_p=self.ourInterpolation(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1)
-				#theta_p=self.ourLinearInterpolation(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1)
-				# theta_new = self.interpolateLocal(x0, relative_theta_0, j, image_width, field_of_view, theta_0, width)
-				# x_i_new = thetaToNormalizedX(theta_new)
+				#theta_p=self.ourInterpolation(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1)
+				#theta_p=self.ourLinearInterpolation(relative_theta_0, relative_theta_1, elative_theta_a, relative_theta_b, theta_0, theta_1)
+				theta_p=self.linearInterpolation(relative_theta_a, relative_theta_b, theta_0, theta_1)
+				#theta_p=self.myInterpolation(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1, relative_theta_0_cam1, relative_theta_1_cam0)
 
 				x_i=thetaToNormalizedX(theta_p)
 				# print("x_i: ")
 				# print(x_i)
 				col_i=int(unnormalizeX(x_i, width))
-				print("col_i: ")
-				print(col_i)
 				image = self.image_list[index0]
-				if 0<col_i<width:
-					output_image[:, col_i, :] =image.getColumn(j)
+				if 0<j<image_width:
+					if 0<col_i<width:
+						output_image[:, col_i, :] =image.getColumn(j)
 					
-				print("\n")
-	
 
-			
+	
 
 		return output_image
 

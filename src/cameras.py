@@ -104,6 +104,7 @@ class Camera:
         np.clip(norm, 0.0, 1.0)
         return unnormalizeX(norm, self.resolution[0])
 
+
     def setCOPLeft(self, cop_left):
         self.cop_col_left = cop_left
 
@@ -142,11 +143,7 @@ class Camera:
     def getPositionInODSImageRight(self):
         return self.odsright_xnorm
 
-    def getGlobalAngleOfPixel(self, cam_pos, pixel):
-        cam_coord=getRayForPixel(self, pixel[0], pixel[1])
-        world_coord_homo=np.dot(self.getExtrinsics, cam_coord)
-        homo=world_coord_homo/world_coord_homo[3]
-        world_coord=[homo[0], homo[1], homo[2]]
+
 
 
 # end class Camera 
@@ -259,6 +256,7 @@ class CameraCollection():
             t2[1]=cam[1][3]
             t2[2]=cam[2][3]
             #print(t)
+			
             pos=np.dot(Rtot,t2)
             Rtot = np.dot(Rtot, R2)
             ttot = ttot + pos
@@ -272,7 +270,7 @@ class CameraCollection():
             self.camera_collection[i].extrinsics_absolute = new
             # print('new:' , new[0][3], new[2][3])
             self.planar_camera_positions[cam_i, :] = new[0][3], new[2][3]
-
+			
 
     def getCameraCentresXZ(self, origin):
         self.updateCameraXZLocations(origin)
