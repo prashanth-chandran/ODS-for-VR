@@ -39,16 +39,6 @@ class RendererODS():
 
 		
 	def linearInterpolation(self, theta_0, theta_1,theta_a, theta_b):
-		#print("theta_0")
-		#print(theta_0)
-		#print("theta_1")
-		#print(theta_1)
-		
-		#print("theta_a")
-		#print(theta_a)
-		#print("theta_b")
-		#print(theta_b)
-
 		diff_b1=theta_1-theta_b
 		diff_0a=theta_0-theta_a
 		diff_ba=theta_b-theta_a
@@ -139,9 +129,30 @@ class RendererODS():
 		t1s = (t1-t0)/drange
 		tas = (ta-t0)/drange
 		tbs = (tb-t0)/drange
+		
+		#drange = t0-t1
+		#t0s = (t0-t0)/drange
+		#t1s = (t0-t1)/drange
+		#tas = (t0-ta)/drange
+		#tbs = (t0-tb)/drange
 
 		tps = self.linearInterpolation(t0s, t1s, tas, tbs)
+		#tps = tps*drange + t1
 		tps = tps*drange + t0
+		
+		
+		return tps
+		
+	def normalizeThenInterpolateFlipped(self, t0, t1, ta, tb):
+		drange = t0-t1
+		t0s = (t0-t0)/drange
+		t1s = (t0-t1)/drange
+		tas = (t0-ta)/drange
+		tbs = (t0-tb)/drange
+
+		tps = self.linearInterpolation(t0s, t1s, tas, tbs)
+		tps = tps*drange + t1
+		#tps = tps*drange + t0
 		return tps
 
 		
@@ -392,16 +403,15 @@ class RendererODS():
 				print(col_img)
 				image = self.image_list[i]
 				output_image[:, col_index, :] = image.getColumn(int(col_img))
+				#output_image[:, col_index, :] = [0, 0, 255]
 
 		#cameras=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
-
 		#cameras=[0, 1, 2, 3, 8, 9, 6, 7, 4, 5, 0]
-
 		cameras=[0, 5, 4, 7, 6, 9, 8, 3, 2, 1, 0]
 
 		flows=[]
 		
-		hahacams = 10
+		hahacams = 2
 		for i in range(hahacams):	
 
 			index0=cameras[i]
@@ -417,11 +427,9 @@ class RendererODS():
 		print(all_flows.shape)
 		
 		#view interpolation
-		#vertical_pixel=0
-		
 
 		#for i in range(num_cameras):
-
+		k=0
 		for i in range(hahacams):
 
 			index0=cameras[i]
@@ -441,8 +449,8 @@ class RendererODS():
 			relative_theta_0=cam0.getCOPRelativeAngleLeft()
 			relative_theta_1=cam1.getCOPRelativeAngleLeft()
 			
-			#theta_0=normalizedXToTheta(cam0.getPositionInODSImageLeft())
-			#theta_1=normalizedXToTheta(cam1.getPositionInODSImageLeft())
+			#theta_0_saved=normalizedXToTheta(cam0.getPositionInODSImageLeft())
+			#theta_1_saved=normalizedXToTheta(cam1.getPositionInODSImageLeft())
 			theta_0=mapPointToPanaromaAngle(cam_position0, viewing_circle_centre, ipd, eye)
 			theta_1=mapPointToPanaromaAngle(cam_position1, viewing_circle_centre, ipd, eye)
 
@@ -462,27 +470,15 @@ class RendererODS():
 			print('x0: ', x0)
 			print(x0)
 			print('Normalized Position x0: ', cam0.getPositionInODSImageLeft())
-			
-			#col0_flows =all_flows[index0, :,  x0, 1]
-			#sum=np.sum(col0_flows)
-			#avg=int(sum/image_height)
-			#print(avg)
-			#x0_flowed=x0+np.abs(avg)
-			#relative_theta_0_cam1=getRelativeAngle(cam0.resolution[0], cam_position0, x0_flowed, cam0.favg, cam0.getFieldOfView())
+			x0_ODS=int(unnormalizeX(cam0.getPositionInODSImageLeft(),width))
 		
 			x1=int(round(cam1.getCOPLeft()[0]))
 			#x1=int(round(cam1.getCOPLeft()))
 			print('x1: ', x1)
 			print(x1)
 			print( 'Normalized Position x0: ', cam1.getPositionInODSImageLeft())
-			#col1_flows =all_flows[index0, :,  x1, 1]
-			#sum=np.sum(col1_flows)
-			#avg=int(sum/image_height)
-			#print(avg)
-			#x1_flowed=x1+np.abs(avg)
-			#relative_theta_1_cam0=getRelativeAngle(cam1.resolution[0], cam_position1, x1_flowed, cam1.favg, cam1.getFieldOfView())
-			
-			#print("\n")
+			x1_ODS=int(unnormalizeX(cam1.getPositionInODSImageLeft(),width))
+
 			field_of_view = self.camera_list[i].fov_x
 			print('FOV Cam: ', radians2Degrees(field_of_view))
 
@@ -499,10 +495,10 @@ class RendererODS():
 				theta_a = mapPointToPanaromaAngle(global_ray_a_xz, viewing_circle_centre, ipd, eye)
 				
 				#col_flows =all_flows[index0, :,  j, 1]
-				col_flows =all_flows[0, :,  j, 1]
+				col_flows =all_flows[k, :,  j, 1]
 				sum=np.sum(col_flows)
 				avg=int(sum/image_height)
-				# print(avg)
+				#print(avg)
 				# j_flowed=j-np.abs(avg)
 				j_flowed = j +avg
 				
@@ -514,31 +510,20 @@ class RendererODS():
 				theta_b = mapPointToPanaromaAngle(global_ray_b_xz, viewing_circle_centre, ipd, eye)
 				
 				# print("theta_a")
-				# print(theta_a)
-				# print("theta_b")
 				# print(theta_b)
 
 				theta_a_degree=radians2Degrees360(theta_a)
-				print('ta degrees', theta_a_degree)
+				#print('ta degrees', theta_a_degree)
 				theta_b_degree=radians2Degrees360(theta_b)
-				print('tb degrees', theta_b_degree)
+				#print('tb degrees', theta_b_degree)
 				
-				#relative_theta_b=getRelativeAngle(cam1.resolution[0], cam_position1, j_flowed, cam1.favg, cam1.getFieldOfView())
-				#theta_p=self.weightedAverage(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1)
-				#theta_p=self.ourInterpolation(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1)
-				#theta_p=self.ourLinearInterpolation(relative_theta_0, relative_theta_1, elative_theta_a, relative_theta_b, theta_0, theta_1)
-				
-				# theta_p_degree=self.linearInterpolation(theta_0_degree, theta_1_degree, theta_a_degree, theta_b_degree)
-				# theta_p_degree = (theta_a_degree + theta_b_degree)/2
-				theta_p_degree = self.normalizeThenInterpolate(theta_0_degree, theta_1_degree, theta_a_degree, theta_b_degree)
-				print("theta_p")
-				print(theta_p_degree)
-				
-				
-				print("\n")
-				
-				#theta_p=self.myInterpolation(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1, relative_theta_0_cam1, relative_theta_1_cam0)
-				
+				if index0==5 or index0==9 or index0==1:
+					theta_p_degree = self.normalizeThenInterpolateFlipped(theta_0_degree, theta_1_degree, theta_a_degree, theta_b_degree)
+				else:
+					theta_p_degree = self.normalizeThenInterpolate(theta_0_degree, theta_1_degree, theta_a_degree, theta_b_degree)
+				#print("theta_p")
+				#print(theta_p_degree)				
+				#print("\n")
 				theta_p=degrees3602Radians(theta_p_degree)
 
 				x_i=thetaToNormalizedX(theta_p)
@@ -548,7 +533,71 @@ class RendererODS():
 				image = self.image_list[index0]
 				if 0<j<image_width:
 					if 0<col_i<width:
-						output_image[:, col_i, :] =image.getColumn(j)
+						#if theta_b_degree<theta_p_degree<theta_a_degree:
+							output_image[:, col_i, :] =(0.5*output_image[:, col_i, :])+(0.5*image.getColumn(j))
+							#output_image[:, col_i, :] = [255, 0, 0]
+						#else:
+							#output_image[:, col_i, :] = [0, 255, 0]
+							
+							
+							
+			
+			for j in range(x1+1, image_width):
+				#relative_theta_a=getRelativeAngle(cam0.resolution[0], cam_position0, j, cam0.favg, cam0.getFieldOfView())
+				ray_a = cam1.getRayForPixel(j, 0)
+
+				ray_a = unit_vector(ray_a)
+				ray_a=np.append(ray_a,1)
+				global_ray_a=np.dot(cam1.extrinsics_absolute, ray_a)
+				global_ray_a_xz=np.asarray([global_ray_a[0], global_ray_a[2]])
+				theta_a = mapPointToPanaromaAngle(global_ray_a_xz, viewing_circle_centre, ipd, eye)
+				
+				#col_flows =all_flows[index0, :,  j, 1]
+				col_flows =all_flows[k, :,  j, 1]
+				sum=np.sum(col_flows)
+				avg=int(sum/image_height)
+				#print(avg)
+				# j_flowed=j-np.abs(avg)
+				j_flowed = j -avg
+				
+				ray_b = cam0.getRayForPixel(j_flowed, 0)
+				ray_b = unit_vector(ray_b)
+				ray_b=np.append(ray_b,1)
+				global_ray_b=np.dot(cam0.extrinsics_absolute, ray_b)
+				global_ray_b_xz=np.asarray([global_ray_b[0], global_ray_b[2]])
+				theta_b = mapPointToPanaromaAngle(global_ray_b_xz, viewing_circle_centre, ipd, eye)
+				
+				# print("theta_a")
+				# print(theta_b)
+
+				theta_a_degree=radians2Degrees360(theta_a)
+				#print('ta degrees', theta_a_degree)
+				theta_b_degree=radians2Degrees360(theta_b)
+				#print('tb degrees', theta_b_degree)
+				
+				if index0==5 or index0==9 or index0==1:
+					theta_p_degree = self.normalizeThenInterpolateFlipped(theta_0_degree, theta_1_degree, theta_b_degree, theta_a_degree)
+				else:
+					theta_p_degree = self.normalizeThenInterpolate(theta_0_degree, theta_1_degree, theta_b_degree, theta_a_degree)
+				#print("theta_p")
+				#print(theta_p_degree)				
+				#print("\n")
+				theta_p=degrees3602Radians(theta_p_degree)
+
+				x_i=thetaToNormalizedX(theta_p)
+				#print("x_i: ")
+				#print(x_i)
+				col_i=int(unnormalizeX(x_i, width))
+				image = self.image_list[index0]
+				if 0<j<image_width:
+					if 0<col_i<width:
+						#if theta_b_degree<theta_p_degree<theta_a_degree:
+							output_image[:, col_i, :] =(0.5*output_image[:, col_i, :])+(0.5*image.getColumn(j))
+			
+							
+			output_image[:, x0_ODS, :] = [0, 0, 255]
+			output_image[:, x1_ODS, :] = [0, 255, 0]			
+			k=k+1
 					
 
 	

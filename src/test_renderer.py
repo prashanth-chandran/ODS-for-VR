@@ -2,6 +2,7 @@ from renderer import *
 from cameras import *
 from SJPImage import *
 import argparse
+import scipy.misc
 
 
 def arg_setup():
@@ -66,6 +67,8 @@ def test_ODS_renderer():
 	#cv2.imshow('Projection centres right: ', vis_image_right)
 	# vis_image_left = rods.renderStuffBruh(0.045/2, [480, 960], eye=-1)
 	cv2.imshow('Projection centres left: ', vis_image_left)
+	
+	#scipy.misc.imsave('first_stitch_left_check-.jpg', vis_image_left)
 	cv2.waitKey(0)
 
 
