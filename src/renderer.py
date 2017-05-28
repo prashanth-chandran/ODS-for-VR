@@ -124,11 +124,32 @@ class RendererODS():
 		return avg
 
 	def normalizeThenInterpolate(self, t0, t1, ta, tb):
-		drange = t1-t0
-		t0s = (t0-t0)/drange
-		t1s = (t1-t0)/drange
-		tas = (ta-t0)/drange
-		tbs = (tb-t0)/drange
+		# handle special case of the discontinuity between 0 to 360 degrees
+		if abs(t0-t1) <= 270.0:
+			drange = t1-t0
+			t0s = (t0-t0)/drange
+			t1s = (t1-t0)/drange
+			tas = (ta-t0)/drange
+			tbs = (tb-t0)/drange
+			tps = self.linearInterpolation(t0s, t1s, tas, tbs)
+			tps = tps*drange + t0
+		else:
+			t1_new = abs(t1-360)+t0
+			tb_new = abs(tb-360)+t0
+			drange = abs(t1_new)
+			t0s = (t0-t0)/drange
+			t1s = (abs(t1_new))/drange
+			tas = (t0-ta)/drange
+			tbs = (abs(tb_new))/drange
+			tps = self.linearInterpolation(t0s, t1s, tas, tbs)
+			tps = t0-(tps*drange)+360
+
+		np.clip(tps, 0.0, 1.0)
+		#drange = t1-t0
+		#t0s = (t0-t0)/drange
+		#t1s = (t1-t0)/drange
+		#tas = (ta-t0)/drange
+		#tbs = (tb-t0)/drange
 		
 		#drange = t0-t1
 		#t0s = (t0-t0)/drange
@@ -136,11 +157,10 @@ class RendererODS():
 		#tas = (t0-ta)/drange
 		#tbs = (t0-tb)/drange
 
-		tps = self.linearInterpolation(t0s, t1s, tas, tbs)
+		#tps = self.linearInterpolation(t0s, t1s, tas, tbs)
 		#tps = tps*drange + t1
-		tps = tps*drange + t0
-		
-		
+		#tps = tps*drange + t0
+
 		return tps
 		
 	def normalizeThenInterpolateFlipped(self, t0, t1, ta, tb):
@@ -153,7 +173,6 @@ class RendererODS():
 		tps = self.linearInterpolation(t0s, t1s, tas, tbs)
 		tps = tps*drange + t1
 		#tps = tps*drange + t0
-		return tps
 
 		
 	def weightedAverage(self, rtheta_0, rtheta_1, rtheta_a, rtheta_b, theta_0, theta_1):
@@ -453,7 +472,6 @@ class RendererODS():
 			#theta_1_saved=normalizedXToTheta(cam1.getPositionInODSImageLeft())
 			theta_0=mapPointToPanaromaAngle(cam_position0, viewing_circle_centre, ipd, eye)
 			theta_1=mapPointToPanaromaAngle(cam_position1, viewing_circle_centre, ipd, eye)
-
 			
 			theta_0_degree=radians2Degrees360(theta_0)
 			theta_1_degree=radians2Degrees360(theta_1)
