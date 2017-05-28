@@ -52,9 +52,17 @@ def test_ODS_renderer():
 	rods = RendererODS()
 	rods.setImageList(ic0)
 	rods.setCameraList(cc)
+
 	# vis_image = rods.visualizeProjectionCentres([255, 800])
-	vis_image = rods.renderCOPSOnly(0.045/2, [480, 960])
-	cv2.imshow('Projection centres: ', vis_image)
+	# Rendering function from yesterday: 
+	# vis_image = rods.renderCOPSOnly(0.045/2, [480, 960])
+
+	# rods.renderGlobalVisTest(0.045/2, [480, 960])
+
+	vis_image_right = rods.renderStuffBruh(0.045/2, [480, 960], eye=1)
+	cv2.imshow('Projection centres right: ', vis_image_right)
+	vis_image_left = rods.renderStuffBruh(0.045/2, [480, 960], eye=-1)
+	cv2.imshow('Projection centres left: ', vis_image_left)
 	cv2.waitKey(0)
 
 
@@ -75,7 +83,7 @@ def test_data_loader():
 def main():
 	# test_renderer()
 	test_ODS_renderer()
-	#test_cameraRig_visualization()
+	# test_cameraRig_visualization()
 	# test_data_loader()
 
 

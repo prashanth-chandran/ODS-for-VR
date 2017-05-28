@@ -12,7 +12,9 @@ class Camera:
         self.intrinsics = np.zeros((3, 3), dtype='float32')
         self.extrinsics_relative = np.zeros((4,4), dtype='float32')
         # Current calibration file does not have absolute parameters
-        # self.extrinsics_absolute = np.zeros((4,4), dtype='float32')
+        self.extrinsics_absolute = np.identity(4, dtype='float32')
+        # NOTE: Not FLIPPING SIGN OF X
+        # self.extrinsics_absolute[0][0] = -1
         self.distortion = np.zeros((4, 1), dtype='float32')
         self.resolution = np.zeros((2, 1), dtype='int32')
         self.fx = 0
@@ -36,7 +38,7 @@ class Camera:
         intrinsics_vector = yaml_calibration[cam_name]['intrinsics']
         self.intrinsics[0][0] = intrinsics_vector[0]
         self.fx = intrinsics_vector[0]
-        self.fov_x = 2*np.arctan2(self.resolution[0], self.fx)
+        self.fov_x = 2*np.arctan2(self.resolution[0]/2, self.fx)
         self.intrinsics[1][1] = intrinsics_vector[1]
         self.fy = intrinsics_vector[1]
         self.intrinsics[0][2] = intrinsics_vector[2]/self.resolution[0]
@@ -91,7 +93,9 @@ class Camera:
         if theta > (self.fov_x/2):
             raise Warning('Theta is larger than the field of view. ')
 
-        norm = np.tan(np.abs(theta))
+        norm = np.tan(np.abs(theta))*self.fx
+        norm_fac = np.tan(self.fov_x)*self.fx
+        norm = norm/norm_fac
         if offsetByWidth:
             norm = norm + 0.5
         else:
@@ -258,7 +262,16 @@ class CameraCollection():
             pos=np.dot(Rtot,t2)
             Rtot = np.dot(Rtot, R2)
             ttot = ttot + pos
-            self.planar_camera_positions[cam_i, :] = ttot[0], ttot[2]
+            # self.planar_camera_positions[cam_i, :] = ttot[0], ttot[2]
+            # print('ttot:', ttot[0], ttot[2])
+
+            # NOTE: Calculation of camera positions is now purely based on global extrinsics. 
+            # Recall: Not flipping the sign of 'x' to prevent images from flipping.
+            ref_extrinsics = self.camera_collection[i-1].extrinsics_absolute
+            new = np.dot(ref_extrinsics, cam)
+            self.camera_collection[i].extrinsics_absolute = new
+            # print('new:' , new[0][3], new[2][3])
+            self.planar_camera_positions[cam_i, :] = new[0][3], new[2][3]
 
 
     def getCameraCentresXZ(self, origin):
@@ -287,8 +300,8 @@ class CameraCollection():
     def visualizeCameras(self, origin):
         self.updateCameraXZLocations(origin)
         centre = self.getViewingCircleCentre()
-        self.planar_camera_positions[:, :] = self.planar_camera_positions[:, :] - centre
-        centre = (0,0)
+        self.planar_camera_positions[:, :] = self.planar_camera_positions[:, :] #- centre
+        # centre = (0,0)
         # test IPD
         ipd = self.getViewingCircleRadius()/2
         # Plot camera locations with their names

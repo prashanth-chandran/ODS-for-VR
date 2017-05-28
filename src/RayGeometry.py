@@ -69,8 +69,8 @@ def degree2Radians(degree):
 def getAngle(centre, cam_pos, ipd):
 	hor = np.linalg.norm(centre-cam_pos)
 	ver = ipd/2
-	#return np.arctan2(ver, hor)
 	return np.arcsin(ver/hor)
+
 
 def getRelativeAngle(width, cam_pos, x, focal_length):
 	a = np.linalg.norm(x-(width/2))
@@ -85,7 +85,9 @@ def getRelativeAngle(width, cam_pos, x, focal_length):
 	#print(theta)
 	return theta
 
+
 def genPointOnViewingCircle(centre, cam_pos, ipd, eye=1):
+	# NOTE: NOT USING THIS FUNCTION ANYMORE. USE getPointOnVC() instead.
 	angle = getAngle(np.asarray(centre), np.asarray(cam_pos), ipd)
 	switch_sign = False
 	if cam_pos[1] > centre[1]:
@@ -108,15 +110,56 @@ def genPointOnViewingCircle(centre, cam_pos, ipd, eye=1):
 			res = centre - ipd*(dir_vec)
 	return res
 
+def getPointOnVC(centre, point, ipd, eye=1):
+	dist1 = np.linalg.norm(np.asarray(point)-np.asarray(centre))
+	theta = np.arcsin((ipd/2)/dist1)
+	# theta = np.arccos((ipd/2)/dist1)
+	# print('theta on VC: ', theta)
+
+	# Find the vector find the centre to the point
+	vec = np.asarray(centre)-np.asarray(point)
+	xv = vec[0]
+	zv = vec[1]
+
+	# Rotate this vector by theta for left eye and -theta for the right eye
+	if eye==-1:
+		x = xv*np.cos(theta) + zv*np.sin(theta)
+		z = -xv*np.sin(theta) + zv*np.cos(theta)
+	else:
+		x = xv*np.cos(-theta) + zv*np.sin(-theta)
+		z = -xv*np.sin(-theta) + zv*np.cos(-theta)
+
+	vec[0] = x
+	vec[1] = z
+	# After rotation, normalize and scale the resulting vector.
+	vec = unit_vector(vec)
+	sidelen = np.sqrt(dist1**2 - (ipd/2)**2)
+	vec = vec*sidelen
+	# Displace 'point' by this vector to get the place where the tangent intersects the circle.
+	# vec[0] and vec[1] contain the x and z co-ordinates of the point of intersection.
+	vec = point + vec
+	return vec
+
+
 def xzToTheta(xz, origin):
 	vec = xz-origin
+	# print(vec)
 	return np.arctan2(vec[1], vec[0])
 
+
 def mapCameraToSphere(camera_pos, origin, ipd, eye=1):
-	point_on_circle = genPointOnViewingCircle(origin, camera_pos, ipd, eye=eye)
+	point_on_circle = np.asarray(getPointOnVC(origin, camera_pos, ipd, eye=eye))
 	# print(xzToTheta(point_on_circle, origin), radians2Degrees(xzToTheta(point_on_circle, origin)))
 	# print(thetaToNormalizedX(xzToTheta(point_on_circle, origin)))
 	return thetaToNormalizedX(xzToTheta(point_on_circle, origin))
+
+def mapPointToPanaromaAngle(point, origin, ipd, eye=1):
+	point_on_circle = np.asarray(getPointOnVC(origin, point, ipd, eye=eye))
+	return xzToTheta(point_on_circle, origin)
+
+def mapPointToPanaromaColumn(point, origin, ipd, eye=1):
+	global_theta = mapPointToPanaromaAngle(point, origin, ipd, eye)
+	return thetaToNormalizedX(global_theta)
 
 
 def fitCircleTo3Points(point1, point2, point3):
@@ -141,7 +184,7 @@ def frange(start, stop, step):
 		i += step
 
 
-def getCirclePoints(centre, radius, thresh=1e-4):
+def getCirclePoints(centre, radius, thresh=1e-5):
 	xc = centre[0]
 	yc = centre[1]
 	circle_points = []
