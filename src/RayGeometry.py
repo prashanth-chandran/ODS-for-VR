@@ -65,6 +65,18 @@ def radians2Degrees(rad):
 def degree2Radians(degree):
 	return degree*np.pi/180
 
+def radians2Degrees360(angle_rad):
+	if angle_rad > 0:
+		angle = angle_rad
+	else:
+		angle = 2*np.pi - np.abs(angle_rad)
+	return radians2Degrees(angle)
+
+def degrees3602Radians(degree):
+	rad = degree2Radians(degree)
+	if rad >= np.pi:
+		rad = -(2*np.pi - rad)
+	return rad
 
 def getAngle(centre, cam_pos, ipd):
 	hor = np.linalg.norm(centre-cam_pos)
