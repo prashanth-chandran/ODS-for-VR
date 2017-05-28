@@ -109,6 +109,12 @@ def xzToTheta(xz, origin):
 	vec = xz-origin
 	return np.arctan2(vec[1], vec[0])
 
+#def xzToTheta(xz, origin, ipd):
+#	vec2 = xz-origin
+#	crossing=[ipd/2, 0]
+#	vec1=crossing-origin
+#	theta=angle_between(vec1, vec2)
+
 def mapCameraToSphere(camera_pos, origin, ipd, eye=1):
 	point_on_circle = genPointOnViewingCircle(origin, camera_pos, ipd, eye=eye)
 	# print(xzToTheta(point_on_circle, origin), radians2Degrees(xzToTheta(point_on_circle, origin)))

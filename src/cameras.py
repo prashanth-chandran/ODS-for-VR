@@ -258,11 +258,12 @@ class CameraCollection():
             t2[1]=cam[1][3]
             t2[2]=cam[2][3]
             #print(t)
+			
             pos=np.dot(Rtot,t2)
             Rtot = np.dot(Rtot, R2)
             ttot = ttot + pos
             self.planar_camera_positions[cam_i, :] = ttot[0], ttot[2]
-
+			
 
     def getCameraCentresXZ(self, origin):
         self.updateCameraXZLocations(origin)

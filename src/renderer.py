@@ -45,10 +45,7 @@ class RendererODS():
 		diff_01=theta_0-theta_1
 		
 		theta_p=((diff_b1*theta_0)+(diff_0a*theta_1))/(diff_ba+diff_01)
-		while theta_p<-np.pi:
-			theta_p=theta_p+np.pi
-			
-		theta_p=np.pi+theta_p
+		
 		return theta_p
 	
 	def ourLinearInterpolation(self, rtheta_0, rtheta_1, rtheta_a, rtheta_b, theta_0, theta_1):
@@ -66,13 +63,6 @@ class RendererODS():
 			
 		theta_p=np.pi+theta_p
 			
-		print("theta_p")
-		print(theta_p)
-		print("\n")
-		
-		print("theta_p")
-		print(theta_p)
-		print("\n")
 		return theta_p
 	
 	def ourInterpolation(self, rtheta_0, rtheta_1, rtheta_a, rtheta_b, theta_0, theta_1):
@@ -87,10 +77,6 @@ class RendererODS():
 		#factor1=np.abs((rtheta_a-rtheta_0)/(rtheta_0-rtheta_1_cam0))
 		#factor2=np.abs((rtheta_b-rtheta_1)/(rtheta_0_cam1-rtheta_1))
 		
-		print("factor 1")
-		print(factor1)
-		print("factor 2")
-		print(factor2)
 		#theta_p =(((1+factor1)*(theta_1-theta_0))+((1-factor2)*(theta_1-theta_0)))/((factor1+factor2))
 		#theta_p=(((factor2*(theta_0-theta_1))+theta_1)+(theta_0-(factor1*(theta_0-theta_1))))/(theta_0-theta_1)
 		
@@ -109,9 +95,7 @@ class RendererODS():
 			
 		theta_p=np.pi+theta_p
 			
-		print("theta_p")
-		print(theta_p)
-		print("\n")
+		
 		return theta_p
 		
 	def weightedAverage(self, rtheta_0, rtheta_1, rtheta_a, rtheta_b, theta_0, theta_1):
@@ -123,9 +107,7 @@ class RendererODS():
 			theta_p=theta_p+np.pi
 			
 		theta_p=np.pi+theta_p
-		print("theta_p")
-		print(theta_p)
-		print("\n")
+		
 		return theta_p
 
 	def setCameraList(self, camera_collection):
@@ -207,7 +189,7 @@ class RendererODS():
 		#view interpolation
 		#vertical_pixel=0
 		
-		for i in range(0,1):
+		for i in range(1):
 			index0=cameras[i]
 			index1=cameras[i+1]
 			cam0=self.camera_list[index0]
@@ -224,11 +206,6 @@ class RendererODS():
 			
 			relative_theta_0=cam0.getCOPRelativeAngleLeft()
 			relative_theta_1=cam1.getCOPRelativeAngleLeft()
-			print("relative theta 0")
-			print(relative_theta_0)
-			print("relative theta 1")
-			print(relative_theta_1)
-			print("\n")
 			
 			theta_0=normalizedXToTheta(cam0.getPositionInODSImageLeft())
 			theta_1=normalizedXToTheta(cam1.getPositionInODSImageLeft())
@@ -272,19 +249,16 @@ class RendererODS():
 				
 				relative_theta_b=getRelativeAngle(cam1.resolution[0], cam_position1, j_flowed, cam1.favg, cam1.getFieldOfView())
 				
-				theta_p=self.weightedAverage(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1)
+				#theta_p=self.weightedAverage(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1)
 				#theta_p=self.ourInterpolation(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1)
 				#theta_p=self.ourLinearInterpolation(relative_theta_0, relative_theta_1, elative_theta_a, relative_theta_b, theta_0, theta_1)
-				#theta_p=self.linearInterpolation(relative_theta_a, relative_theta_b, theta_0, theta_1)
+				theta_p=self.linearInterpolation(relative_theta_a, relative_theta_b, theta_0, theta_1)
 				#theta_p=self.myInterpolation(relative_theta_0, relative_theta_1, relative_theta_a, relative_theta_b, theta_0, theta_1, relative_theta_0_cam1, relative_theta_1_cam0)
 				
 				x_i=thetaToNormalizedX(theta_p)
 				#print("x_i: ")
 				#print(x_i)
 				col_i=int(unnormalizeX(x_i, width))
-				print("col_i: ")
-				print(col_i)
-				print("\n")
 				image = self.image_list[index0]
 				if 0<j<image_width:
 					if 0<col_i<width:
