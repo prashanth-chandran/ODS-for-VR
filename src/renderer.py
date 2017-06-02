@@ -46,6 +46,16 @@ class RendererODS():
 		theta_p=((diff_b1*theta_0)+(diff_0a*theta_1))/(diff_ba+diff_10)
 		
 		return theta_p
+		
+	def linearInterpolation(self, theta_0, theta_1,theta_a, theta_b):
+		diff_b1=theta_1-theta_b
+		diff_0a=theta_0-theta_a
+		diff_ba=theta_b-theta_a
+		diff_10=theta_0-theta_1
+		
+		theta_p=((diff_b1*theta_0)+(diff_0a*theta_1))/(diff_ba+diff_10)
+		
+		return theta_p
 
 	def normalizeThenInterpolate(self, t0, t1, ta, tb):
 		# handle special case of the discontinuity between 0 to 360 degrees
