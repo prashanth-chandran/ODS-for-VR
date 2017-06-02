@@ -36,6 +36,16 @@ class Renderer():
 class RendererODS():
 	def __init__(self):
 		self.init_complete = False
+		
+	def jumpLinearInterpolation(self, theta_0, theta_1,theta_a, theta_b):
+		diff_b1=theta_1-theta_b
+		diff_0a=theta_0-theta_a
+		diff_ba=theta_b-theta_a
+		diff_10=theta_0-theta_1
+		
+		theta_p=((diff_b1*theta_0)+(diff_0a*theta_1))/(diff_ba+diff_10)
+		
+		return theta_p
 
 		
 	def linearInterpolation(self, theta_0, theta_1,theta_a, theta_b):
@@ -136,7 +146,7 @@ class RendererODS():
 		else:
 			t1_new = abs(t1-360)+t0
 			tb_new = abs(tb-360)+t0
-			drange = abs(t1_new)
+			drange = (abs(t1_new))*2
 			t0s = (t0-t0)/drange
 			t1s = (abs(t1_new))/drange
 			tas = (t0-ta)/drange
@@ -144,7 +154,7 @@ class RendererODS():
 			tps = self.linearInterpolation(t0s, t1s, tas, tbs)
 			tps = t0-(tps*drange)+360
 
-		np.clip(tps, 0.0, 1.0)
+		#np.clip(tps, 0.0, 1.0)
 		#drange = t1-t0
 		#t0s = (t0-t0)/drange
 		#t1s = (t1-t0)/drange
@@ -173,7 +183,21 @@ class RendererODS():
 		tps = self.linearInterpolation(t0s, t1s, tas, tbs)
 		tps = tps*drange + t1
 		#tps = tps*drange + t0
+		#np.clip(tps, 0.0, 1.0)
+		return tps
 
+	def normalizeThenInterpolate2(self, t0, t1, ta, tb):
+		drange = t1-t0
+		t0s = (t0-t0)/drange
+		t1s = (t1-t0)/drange
+		tas = (ta-t0)/drange
+		tbs = (tb-t0)/drange
+
+		tps = self.linearInterpolation(t0s, t1s, tas, tbs)
+		tps = tps*drange + t1
+		#tps = tps*drange + t1
+		#np.clip(tps, 0.0, 1.0)
+		return tps
 		
 	def weightedAverage(self, rtheta_0, rtheta_1, rtheta_a, rtheta_b, theta_0, theta_1):
 		f = (rtheta_a/rtheta_0)*theta_0
@@ -427,10 +451,11 @@ class RendererODS():
 		#cameras=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
 		#cameras=[0, 1, 2, 3, 8, 9, 6, 7, 4, 5, 0]
 		cameras=[0, 5, 4, 7, 6, 9, 8, 3, 2, 1, 0]
+		#cameras=[0, 4, 6, 8, 2, 0]
 
 		flows=[]
 		
-		hahacams = 2
+		hahacams = 10
 		for i in range(hahacams):	
 
 			index0=cameras[i]
@@ -468,6 +493,8 @@ class RendererODS():
 			relative_theta_0=cam0.getCOPRelativeAngleLeft()
 			relative_theta_1=cam1.getCOPRelativeAngleLeft()
 			
+
+			
 			#theta_0_saved=normalizedXToTheta(cam0.getPositionInODSImageLeft())
 			#theta_1_saved=normalizedXToTheta(cam1.getPositionInODSImageLeft())
 			theta_0=mapPointToPanaromaAngle(cam_position0, viewing_circle_centre, ipd, eye)
@@ -477,9 +504,9 @@ class RendererODS():
 			theta_1_degree=radians2Degrees360(theta_1)
 			
 			print("theta_0_degree")
-			print(theta_0_degree)
+			print(theta_0)
 			print("theta_1_degree")
-			print(theta_1_degree)
+			print(theta_1)
 			
 			
 			
@@ -489,6 +516,8 @@ class RendererODS():
 			print(x0)
 			print('Normalized Position x0: ', cam0.getPositionInODSImageLeft())
 			x0_ODS=int(unnormalizeX(cam0.getPositionInODSImageLeft(),width))
+
+			
 		
 			x1=int(round(cam1.getCOPLeft()[0]))
 			#x1=int(round(cam1.getCOPLeft()))
@@ -531,14 +560,20 @@ class RendererODS():
 				# print(theta_b)
 
 				theta_a_degree=radians2Degrees360(theta_a)
-				#print('ta degrees', theta_a_degree)
+				#print('ta degrees', theta_a)
 				theta_b_degree=radians2Degrees360(theta_b)
-				#print('tb degrees', theta_b_degree)
+				#print('tb degrees', theta_b)
+				theta_p_degree=0.0
 				
-				if index0==5 or index0==9 or index0==1:
-					theta_p_degree = self.normalizeThenInterpolateFlipped(theta_0_degree, theta_1_degree, theta_a_degree, theta_b_degree)
+				if index0==4 or index0==9 or index0==1:
+					theta_p_degree = self.normalizeThenInterpolateFlipped(theta_0_degree, theta_1_degree, theta_b_degree, theta_a_degree)
 				else:
+				#	if index0==7:
+				#		theta_p_degree = self.normalizeThenInterpolateFlipped(theta_0_degree, theta_1_degree, theta_b_degree, theta_a_degree)
+				#	else:
 					theta_p_degree = self.normalizeThenInterpolate(theta_0_degree, theta_1_degree, theta_a_degree, theta_b_degree)
+				#theta_p_degree = self.normalizeThenInterpolate(theta_0_degree, theta_1_degree, theta_a_degree, theta_b_degree)
+				#theta_p_degree = self.jumpLinearInterpolation(theta_0_degree, theta_1_degree, theta_a_degree, theta_b_degree)
 				#print("theta_p")
 				#print(theta_p_degree)				
 				#print("\n")
@@ -551,16 +586,17 @@ class RendererODS():
 				image = self.image_list[index0]
 				if 0<j<image_width:
 					if 0<col_i<width:
-						#if theta_b_degree<theta_p_degree<theta_a_degree:
+						if index0==0 or index0==4 or index0==6 or index0==8 or index0==3 or index0==2:
+						#if index0==0 or index0==5 or index0==6 or index0==8 or index0==3 or index0==2:
 							output_image[:, col_i, :] =(0.5*output_image[:, col_i, :])+(0.5*image.getColumn(j))
 							#output_image[:, col_i, :] = [255, 0, 0]
 						#else:
 							#output_image[:, col_i, :] = [0, 255, 0]
 							
-							
-							
+			
 			
 			for j in range(x1+1, image_width):
+			#for j in range(0, x0):
 				#relative_theta_a=getRelativeAngle(cam0.resolution[0], cam_position0, j, cam0.favg, cam0.getFieldOfView())
 				ray_a = cam1.getRayForPixel(j, 0)
 
@@ -585,18 +621,22 @@ class RendererODS():
 				global_ray_b_xz=np.asarray([global_ray_b[0], global_ray_b[2]])
 				theta_b = mapPointToPanaromaAngle(global_ray_b_xz, viewing_circle_centre, ipd, eye)
 				
-				# print("theta_a")
-				# print(theta_b)
+				
 
 				theta_a_degree=radians2Degrees360(theta_a)
-				#print('ta degrees', theta_a_degree)
+				#print('ta degrees', theta_a)
 				theta_b_degree=radians2Degrees360(theta_b)
-				#print('tb degrees', theta_b_degree)
+				#print('tb degrees', theta_b)
 				
-				if index0==5 or index0==9 or index0==1:
+				if index0==4 or index0==9 or index0==1:
 					theta_p_degree = self.normalizeThenInterpolateFlipped(theta_0_degree, theta_1_degree, theta_b_degree, theta_a_degree)
 				else:
+				#	if index0==7:
+				#		theta_p_degree = self.normalizeThenInterpolate(theta_1_degree, theta_0_degree, theta_a_degree, theta_b_degree)
+				#	else:
 					theta_p_degree = self.normalizeThenInterpolate(theta_0_degree, theta_1_degree, theta_b_degree, theta_a_degree)
+				#theta_p_degree = self.normalizeThenInterpolateFlipped(theta_0_degree, theta_1_degree, theta_a_degree, theta_b_degree)
+				#theta_p_degree = self.jumpLinearInterpolation(theta_0_degree, theta_1_degree, theta_b_degree, theta_a_degree)
 				#print("theta_p")
 				#print(theta_p_degree)				
 				#print("\n")
@@ -609,12 +649,14 @@ class RendererODS():
 				image = self.image_list[index0]
 				if 0<j<image_width:
 					if 0<col_i<width:
-						#if theta_b_degree<theta_p_degree<theta_a_degree:
+						if index0==0 or index0==4 or index0==6 or index0==8 or index0==3 or index0==2:
+						#if index0==0 or index0== 5 or index0==6 or index0==8 or index0==3 or index0==2:
 							output_image[:, col_i, :] =(0.5*output_image[:, col_i, :])+(0.5*image.getColumn(j))
 			
 							
-			output_image[:, x0_ODS, :] = [0, 0, 255]
-			output_image[:, x1_ODS, :] = [0, 255, 0]			
+			#output_image[:, x0_ODS, :] = [0, 0, 255]
+			#output_image[:, x1_ODS, :] = [0, 255, 0]	
+			
 			k=k+1
 					
 

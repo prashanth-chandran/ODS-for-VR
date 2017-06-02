@@ -56,7 +56,8 @@ def test_ODS_renderer():
 
 	# vis_image = rods.visualizeProjectionCentres([255, 800])
 	# Rendering function from yesterday: 
-	vis_image_left = rods.renderCOPSOnly(0.045/2, [480, 960])
+	#vis_image_left = rods.renderCOPSOnly(0.045/2, [480, 960])
+	vis_image_left = rods.renderCOPSOnly(0.062, [480, 960])
 
 	# This function goes over every camera in the list and plots the start, middle and end
 	# points of its images in the global frame. The mapping of these points onto the viewing circle
@@ -68,7 +69,7 @@ def test_ODS_renderer():
 	# vis_image_left = rods.renderStuffBruh(0.045/2, [480, 960], eye=-1)
 	cv2.imshow('Projection centres left: ', vis_image_left)
 	
-	#scipy.misc.imsave('first_stitch_left_check-.jpg', vis_image_left)
+	scipy.misc.imsave('fifth_stitch.jpg', vis_image_left)
 	cv2.waitKey(0)
 
 

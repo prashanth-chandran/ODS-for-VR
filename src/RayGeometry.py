@@ -148,6 +148,28 @@ def getPointOnVC(centre, point, ipd, eye=1):
 	vec = point + vec
 	return vec
 
+def getIntersectionOnVC(center, cam, point, radius, eye=1):
+	m=(point[1]-cam[1])/(point[0]-cam[0])
+	c=cam[1]-(m*cam[0])
+	p=center[0]
+	q=center[1]
+	r=radius
+	A=(m*m)+1
+	B=2*((m*c)-(m*q)-p)
+	C=(q*q)-(r*r)+(p*p)-(2*c*q)+(c*c)
+	x1=(-B+np.sqrt((B*B)-(4*A*C)))/(2*A)
+	x2=(-B-np.sqrt((B*B)-(4*A*C)))/(2*A)
+	y1=m*x1+c
+	y2=m*x2+c
+	p1=x1, y1
+	p2=x2, y2
+	d1=np.linalg.norm(cam-p1)
+	d2=np.linalg.norm(cam-p2)
+	if d1<d2:
+		return np.asarray(p1)
+	else:
+		return np.asarray(p2)
+	
 
 def xzToTheta(xz, origin):
 	vec = xz-origin
