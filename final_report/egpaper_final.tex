@@ -1,0 +1,167 @@
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+\usepackage{cvpr}
+\usepackage{times}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{gensymb}
+
+% Include other packages here, before hyperref.
+
+% If you comment hyperref and then uncomment it, you should delete
+% egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
+% run, let it finish, and you should be clear).
+%\usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
+
+\cvprfinalcopy % *** Uncomment this line for the final submission
+
+\def\cvprPaperID{****} % *** Enter the 3DV Paper ID here
+\def\httilde{\mbox{\tt\raisebox{-.5ex}{\symbol{126}}}}
+
+% Pages are numbered in submission mode, and unnumbered in camera-ready
+%\ifcvprfinal\pagestyle{empty}\fi
+\setcounter{page}{4321}
+\begin{document}
+
+%%%%%%%%% TITLE
+\title{Omni-directional stereo for 360$\degree$ 3D virual reality video}
+
+\author{Prashanth Chandran\\
+ETH Zurich\\
+www.ethz.ch\\
+{\tt\small chandranp@student.ethz.ch}
+% For a paper whose authors are all at the same institution,
+% omit the following lines up until the closing ``}''.
+% Additional authors and addresses can be added with ``\and'',
+% just like the second author.
+% To save space, use either the email address or home page, not both
+\and
+Sasha Pagani\\
+ETH Zurich\\
+www.ethz.ch\\
+{\tt\small paganis@student.ethz.ch}
+\and
+Julia Giger\\
+ETH Zurich\\
+www.ethz.ch\\
+{\tt\small jgiger@student.ethz.ch}
+}
+
+\maketitle
+%\thispagestyle{empty}
+
+%%%%%%%%% ABSTRACT
+\begin{abstract}
+   The aim of our project is to produce omni-directional stereo images and videos, which are for example viewable in the Google Cardboard. The input for our pipeline are the images of a camera rig, which are stitched together for receiving omni-directional images. This process has to been carried out twice, once for the left and once for the right eye to get an omni-directional stereo image.
+\end{abstract}
+
+%%%%%%%%% BODY TEXT
+\section{Introduction}
+
+The stereo view of our eyes is created by fusing the image from the left eye with the one from the right eye. This enables us to perceive a stereo impression of the world. Therefore, to produce stereo videos, we need to capture synchronized videos from two cameras set apart at interpupillary distance (IPD), which denotes the distance between the two eyes and is on average about 6.4 cm. However, the goal of this project is not only to produce stereo, but omni-directional, which means 360$\degree$, videos. The first simple idea coming in mind to capture such videos is to place two omni-directional cameras with a distance of IPD. One issue with such an approach is that the two cameras will see each other, which is undesirable. However, the more important problem is that objects lying on the line between the two camera centers will have no disparity (see figure 1). Disparity denotes the amount of shift in the image position between the left and the right eye. Therefore, this simple solution does not work and would not produce the desired omni-directional stereo videos.
+
+The ideal solution would be to have a stereo image pair for every head orientation, for example one pair for each degree (see figure 2). However, this would be a huge amount of images. The main idea is to approximate this optimal view by only capturing the central ray of each camera instead of the full image at each head orientation (see figure 3). Figure 4 illustrates the extension of this approach to 360$\degree$.
+
+\begin{figure}[t]
+\begin{center}
+   \includegraphics[width=0.8\linewidth]{pictures/two_360.png}
+\end{center}
+   \caption{Illustration of two 360$\degree$ cameras placed next to each other.}
+\label{fig:long}
+\label{fig:onecol}
+\end{figure}
+
+\begin{figure}[t]
+\begin{center}
+   \includegraphics[width=0.5\linewidth]{pictures/wanted.png}
+\end{center}
+   \caption{This image shows the most optimal situation, where a full image is captured for each head direction. The red rays illustrate the left eye and the blue ones the left eye.}
+\label{fig:long}
+\label{fig:onecol}
+\end{figure}
+
+\begin{figure}[t]
+\begin{center}
+	\includegraphics[width=0.8\linewidth]{pictures/approxi.png}
+\end{center}
+   \caption{The left image shows the rays for capturing the full image at one head direction. The right image illustrates the ODS approximation by using only the central ray of each camera position.}
+\label{fig:long}
+\label{fig:onecol}
+\end{figure}
+
+\begin{figure}[t]
+\begin{center}
+   \includegraphics[width=0.5\linewidth]{pictures/ods.png}
+\end{center}
+   \caption{This image shows the ODS approximation for 360$\degree$. The red rays illustrates the left eye and the blue rays the right eye.}
+\label{fig:long}
+\label{fig:onecol}
+\end{figure}
+
+
+%------------------------------------------------------------------------
+\section{Related work}
+The whole project is based on the paper "Jump: Virtual Reality Video" by Anderson et al. Therefore, our main pipeline is the same as described in Anderson et al. However, we did not implement the sophisticated algorithm for the flow computation. We used a provided method of OpenCV for the flow estimation. Furthermore, we simplified the exposure correction and the composition step. For the implementation details, we also used the article "Rendering Omni-directional Stereo Content" from Google.
+
+%------------------------------------------------------------------------
+\section{Method}
+An overview of our pipeline can be found in figure 5. The inputs are 10 synchronized videos from a camera rig. The first step is the calibration of the different cameras of the rig, which includes the computation of the intrinsics and extrinsics of each camera. The next step is the optical flow estimation between the neighboring camera pairs. For having nice transitions in the final ODS stitch, an exposure correction between neighboring image pairs is applied. Based on the computed flow values, the view interpolation between the images is calculated and they are stitched together as a final step, which results in the desired ODS video.
+
+\begin{figure}[t]
+\begin{center}
+   \includegraphics[width=0.3\linewidth]{pictures/pipeline.png}
+\end{center}
+   \caption{Overview of the pipeline.}
+\label{fig:long}
+\label{fig:onecol}
+\end{figure}
+
+\subsection{Camera calibration}
+Additionally to the dataset, consisting of 10 videos, we received a calibration file from our supervisor, which contained the calibration data for each camera. This calibration data consists of the intrinsic and relative extrinsic of each camera. For the computation in the later stages of our pipeline, we also needed the absolute extrinsics of each camera, which were computed with the following formula:
+$E_i=....$
+
+\begin{figure}[t]
+\begin{center}
+   \includegraphics[width=0.8\linewidth]{pictures/our_camera_rig.png}
+\end{center}
+   \caption{An illustration of our camera rig based on the calibration file.}
+\label{fig:long}
+\label{fig:onecol}
+\end{figure}
+
+\subsection{Flow estimation}
+We did not implement such a sophisticated flow estimation algorithm as in Anderson et al. Instead, we used an existing per-pixel flow computation method from the OpenCV library.
+
+\subsection{Exposure correction}
+For the exposure correction, we interpolate linearly between the average image intensity of the neighboring image pairs.
+\subsection{View interpolation}
+
+\subsection{Stitching}
+
+
+
+%------------------------------------------------------------------------
+\section{Results}
+
+
+%------------------------------------------------------------------------
+\section{Discussion}
+
+
+%------------------------------------------------------------------------
+\section{Conclusion}
+
+
+
+
+
+
+
+{\small
+\bibliographystyle{ieee}
+\bibliography{egbib}
+}
+
+\end{document}

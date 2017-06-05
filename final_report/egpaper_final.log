@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (MiKTeX 2.9) (preloaded format=pdflatex 2016.3.20)  5 JUN 2017 12:19
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (MiKTeX 2.9) (preloaded format=pdflatex 2016.3.20)  5 JUN 2017 14:50
 entering extended mode
 **./egpaper_final.tex
 (egpaper_final.tex
@@ -187,6 +187,24 @@ LaTeX Warning: Label `fig:long' multiply defined.
 
 LaTeX Warning: Label `fig:onecol' multiply defined.
 
+
+LaTeX Warning: Label `fig:long' multiply defined.
+
+
+LaTeX Warning: Label `fig:onecol' multiply defined.
+
+
+LaTeX Warning: Label `fig:long' multiply defined.
+
+
+LaTeX Warning: Label `fig:onecol' multiply defined.
+
+
+LaTeX Warning: Label `fig:long' multiply defined.
+
+
+LaTeX Warning: Label `fig:onecol' multiply defined.
+
 )
 \openout1 = `egpaper_final.aux'.
 
@@ -244,30 +262,70 @@ Package gensymb Info: Using \Omega for \ohm on input line 26.
 Package gensymb Warning: Not defining \micro.
 
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <14.4> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 47.
-LaTeX Font Info:    Try loading font information for U+msa on input line 47.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 52.
+LaTeX Font Info:    Try loading font information for U+msa on input line 52.
 ("C:\Users\Julia\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsfonts\umsa.fd"
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 47.
+LaTeX Font Info:    Try loading font information for U+msb on input line 52.
 ("C:\Users\Julia\AppData\Local\Programs\MiKTeX 2.9\tex\latex\amsfonts\umsb.fd"
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Try loading font information for OT1+pcr on input line 47.
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 52.
 ("C:\Users\Julia\AppData\Local\Programs\MiKTeX 2.9\tex\latex\psnfss\ot1pcr.fd"
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 )
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <12> not available
-(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 51.
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 56.
+<pictures/two_360.png, id=1, 339.669pt x 330.033pt>
+File: pictures/two_360.png Graphic file (type png)
+ <use pictures/two_360.png>
+Package pdftex.def Info: pictures/two_360.png used on input line 69.
+(pdftex.def)             Requested size: 189.70947pt x 184.33376pt.
 
-Underfull \vbox (badness 6461) has occurred while \output is active []
+<pictures/wanted.png, id=3, 407.72325pt x 326.4195pt>
+File: pictures/wanted.png Graphic file (type png)
 
+<use pictures/wanted.png>
+Package pdftex.def Info: pictures/wanted.png used on input line 78.
+(pdftex.def)             Requested size: 118.56796pt x 94.9232pt.
+
+<pictures/approxi.png, id=4, 458.31226pt x 208.3785pt>
+File: pictures/approxi.png Graphic file (type png)
+
+<use pictures/approxi.png>
+Package pdftex.def Info: pictures/approxi.png used on input line 87.
+(pdftex.def)             Requested size: 189.70947pt x 86.25606pt.
+ <pictures/ods.png, id=5, 257.763pt x 254.1495pt>
+File: pictures/ods.png Graphic file (type png)
+
+<use pictures/ods.png>
+Package pdftex.def Info: pictures/ods.png used on input line 96.
+(pdftex.def)             Requested size: 118.56796pt x 116.90631pt.
  [4321{C:/Users/Julia/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}
 
 
-]
+ <./pictures/two_360.png> <./pictures/wanted.png>]
+<pictures/pipeline.png, id=19, 172.84575pt x 451.6875pt>
+File: pictures/pipeline.png Graphic file (type png)
+
+<use pictures/pipeline.png>
+Package pdftex.def Info: pictures/pipeline.png used on input line 114.
+(pdftex.def)             Requested size: 71.1415pt x 185.90985pt.
+
+<pictures/our_camera_rig.png, id=20, 358.33875pt x 269.20575pt>
+File: pictures/our_camera_rig.png Graphic file (type png)
+
+<use pictures/our_camera_rig.png>
+Package pdftex.def Info: pictures/our_camera_rig.png used on input line 127.
+(pdftex.def)             Requested size: 189.70947pt x 142.52226pt.
+
 No file egpaper_final.bbl.
-[4322
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [4322 <./pictures/approxi.png> <./pictures/ods.png> <./pictures/pipeline.png> 
+<./pictures/our_camera_rig.png>] [4323
 
 ] (egpaper_final.aux)
 
@@ -275,29 +333,29 @@ LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 2419 strings out of 493634
- 31406 string characters out of 3135239
+ 2452 strings out of 493634
+ 32100 string characters out of 3135239
  94173 words of memory out of 3000000
- 5762 multiletter control sequences out of 15000+200000
- 25201 words of font info for 70 fonts, out of 3000000 for 9000
+ 5786 multiletter control sequences out of 15000+200000
+ 26308 words of font info for 71 fonts, out of 3000000 for 9000
  1025 hyphenation exceptions out of 8191
  34i,9n,26p,1119b,312s stack positions out of 5000i,500n,10000p,200000b,50000s
 {C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/enc/dvips/fontname/8r
 .enc}<C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfo
 nts/cm/cmmi10.pfb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1
-/public/amsfonts/cm/cmr10.pfb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9
-/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/Julia/AppData/Local/Programs
-/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/Julia/AppData/L
-ocal/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/Jul
-ia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy7.pfb><
-C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw/courier/ucrr8a
-.pfb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw/times/ut
-mb8a.pfb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw/time
-s/utmr8a.pfb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw/
-times/utmri8a.pfb>
-Output written on egpaper_final.pdf (2 pages, 102801 bytes).
+/public/amsfonts/cm/cmmi7.pfb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9
+/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/Julia/AppData/Local/Program
+s/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/Julia/AppData/
+Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/Ju
+lia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy7.pfb>
+<C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw/courier/ucrr8
+a.pfb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw/times/u
+tmb8a.pfb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw/tim
+es/utmr8a.pfb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw
+/times/utmri8a.pfb>
+Output written on egpaper_final.pdf (3 pages, 446654 bytes).
 PDF statistics:
- 50 PDF objects out of 1000 (max. 8388607)
+ 66 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 31 words of extra memory for PDF output out of 10000 (max. 10000000)
 
