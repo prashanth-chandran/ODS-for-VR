@@ -136,7 +136,21 @@ We did not implement such a sophisticated flow estimation algorithm as in Anders
 
 \subsection{Exposure correction}
 For the exposure correction, we interpolate linearly between the average image intensity of the neighboring image pairs.
+
 \subsection{View interpolation}
+We used the following interpolation from Anderson et al. for our view interpolation:\\
+$\theta_p=\dfrac{(\theta_{b}-\theta_{1})*\theta_{0}(\theta_{0}-\theta_{a})*\theta_{1}}{\theta_{b}-\theta_{a}+\theta_{0}-\theta_{1}}$
+
+Where $\theta_ {0}$ and $\theta_ {1}$ are the headings of the two cameras in the ODS stitch. $\theta_ {a}$ is the heading of a point in the first camera and $\theta_ {b}$ is the heading of the same point in the second camera (see figure 7).
+
+\begin{figure}[t]
+\begin{center}
+   \includegraphics[width=0.7\linewidth]{pictures/interpolation.png}
+\end{center}
+   \caption{This is an illustration of the different angles used in the interpolation formula.}
+\label{fig:long}
+\label{fig:onecol}
+\end{figure}
 
 \subsection{Stitching}
 
