@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (MiKTeX 2.9) (preloaded format=pdflatex 2016.3.20)  5 JUN 2017 16:30
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (MiKTeX 2.9) (preloaded format=pdflatex 2016.3.20)  5 JUN 2017 16:40
 entering extended mode
 **./egpaper_final.tex
 (egpaper_final.tex
@@ -174,44 +174,7 @@ LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
 ("C:\Users\Julia\AppData\Local\Programs\MiKTeX 2.9\tex\latex\was\gensymb.sty"
 Package: gensymb 2003/07/02 v1.0 (WaS)
 )
-(egpaper_final.aux
-
-LaTeX Warning: Label `fig:long' multiply defined.
-
-
-LaTeX Warning: Label `fig:onecol' multiply defined.
-
-
-LaTeX Warning: Label `fig:long' multiply defined.
-
-
-LaTeX Warning: Label `fig:onecol' multiply defined.
-
-
-LaTeX Warning: Label `fig:long' multiply defined.
-
-
-LaTeX Warning: Label `fig:onecol' multiply defined.
-
-
-LaTeX Warning: Label `fig:long' multiply defined.
-
-
-LaTeX Warning: Label `fig:onecol' multiply defined.
-
-
-LaTeX Warning: Label `fig:long' multiply defined.
-
-
-LaTeX Warning: Label `fig:onecol' multiply defined.
-
-
-LaTeX Warning: Label `fig:long' multiply defined.
-
-
-LaTeX Warning: Label `fig:onecol' multiply defined.
-
-)
+(egpaper_final.aux)
 \openout1 = `egpaper_final.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 26.
@@ -227,7 +190,8 @@ LaTeX Font Info:    ... okay on input line 26.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 26.
 LaTeX Font Info:    ... okay on input line 26.
 LaTeX Font Info:    Try loading font information for OT1+ptm on input line 26.
- ("C:\Users\Julia\AppData\Local\Programs\MiKTeX 2.9\tex\latex\psnfss\ot1ptm.fd"
+
+("C:\Users\Julia\AppData\Local\Programs\MiKTeX 2.9\tex\latex\psnfss\ot1ptm.fd"
 File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
 ) ABD: EveryShipout initializing macros
 ("C:\Users\Julia\AppData\Local\Programs\MiKTeX 2.9\tex\latex\graphics\color.sty
@@ -293,20 +257,20 @@ Package pdftex.def Info: pictures/two_360.png used on input line 69.
 File: pictures/wanted.png Graphic file (type png)
 
 <use pictures/wanted.png>
-Package pdftex.def Info: pictures/wanted.png used on input line 78.
+Package pdftex.def Info: pictures/wanted.png used on input line 77.
 (pdftex.def)             Requested size: 118.56796pt x 94.9232pt.
 
 <pictures/approxi.png, id=4, 458.31226pt x 208.3785pt>
 File: pictures/approxi.png Graphic file (type png)
 
 <use pictures/approxi.png>
-Package pdftex.def Info: pictures/approxi.png used on input line 87.
+Package pdftex.def Info: pictures/approxi.png used on input line 85.
 (pdftex.def)             Requested size: 189.70947pt x 86.25606pt.
  <pictures/ods.png, id=5, 257.763pt x 254.1495pt>
 File: pictures/ods.png Graphic file (type png)
 
 <use pictures/ods.png>
-Package pdftex.def Info: pictures/ods.png used on input line 96.
+Package pdftex.def Info: pictures/ods.png used on input line 93.
 (pdftex.def)             Requested size: 118.56796pt x 116.90631pt.
  [4321{C:/Users/Julia/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}
 
@@ -316,32 +280,32 @@ Package pdftex.def Info: pictures/ods.png used on input line 96.
 File: pictures/pipeline.png Graphic file (type png)
 
 <use pictures/pipeline.png>
-Package pdftex.def Info: pictures/pipeline.png used on input line 114.
+Package pdftex.def Info: pictures/pipeline.png used on input line 110.
 (pdftex.def)             Requested size: 71.1415pt x 185.90985pt.
 
 <pictures/our_camera_rig.png, id=20, 358.33875pt x 269.20575pt>
 File: pictures/our_camera_rig.png Graphic file (type png)
 
 <use pictures/our_camera_rig.png>
-Package pdftex.def Info: pictures/our_camera_rig.png used on input line 127.
+Package pdftex.def Info: pictures/our_camera_rig.png used on input line 122.
 (pdftex.def)             Requested size: 189.70947pt x 142.52226pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 138--142
+Underfull \hbox (badness 10000) in paragraph at lines 132--136
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 138--142
+Underfull \hbox (badness 10000) in paragraph at lines 132--136
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 143--150
+Underfull \hbox (badness 10000) in paragraph at lines 137--144
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 143--150
+Underfull \hbox (badness 10000) in paragraph at lines 137--144
 
  []
 
@@ -354,38 +318,35 @@ Underfull \vbox (badness 3601) has occurred while \output is active []
 File: pictures/interpolation.png Graphic file (type png)
 
 <use pictures/interpolation.png>
-Package pdftex.def Info: pictures/interpolation.png used on input line 153.
+Package pdftex.def Info: pictures/interpolation.png used on input line 147.
 (pdftex.def)             Requested size: 165.99443pt x 229.63596pt.
  (egpaper_final.bbl) [4323
 
- <./pictures/interpolation.png>] (egpaper_final.aux)
-
-LaTeX Warning: There were multiply-defined labels.
-
- ) 
+ <./pictures/interpolation.png>] (egpaper_final.aux) ) 
 Here is how much of TeX's memory you used:
- 2461 strings out of 493634
- 32287 string characters out of 3135239
- 94179 words of memory out of 3000000
- 5792 multiletter control sequences out of 15000+200000
+ 2466 strings out of 493634
+ 32325 string characters out of 3135239
+ 94195 words of memory out of 3000000
+ 5797 multiletter control sequences out of 15000+200000
  26308 words of font info for 71 fonts, out of 3000000 for 9000
  1025 hyphenation exceptions out of 8191
- 34i,9n,26p,1119b,312s stack positions out of 5000i,500n,10000p,200000b,50000s
-{C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/enc/dvips/fontname/8r
-.enc}<C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfo
-nts/cm/cmmi10.pfb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1
-/public/amsfonts/cm/cmmi7.pfb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9
-/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/Julia/AppData/Local/Program
-s/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/Julia/AppData/Lo
-cal/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/Jul
-ia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy6.pfb><
-C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm
-/cmsy7.pfb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw/co
-urier/ucrr8a.pfb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/
-urw/times/utmb8a.pfb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/ty
-pe1/urw/times/utmr8a.pfb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/font
-s/type1/urw/times/utmri8a.pfb>
-Output written on egpaper_final.pdf (3 pages, 489263 bytes).
+ 34i,9n,26p,1131b,312s stack positions out of 5000i,500n,10000p,200000b,50000s
+{C:/Users/Julia/AppData/L
+ocal/Programs/MiKTeX 2.9/fonts/enc/dvips/fontname/8r.enc}<C:/Users/Julia/AppDat
+a/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users
+/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi7.p
+fb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfont
+s/cm/cmr10.pfb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/pu
+blic/amsfonts/cm/cmr7.pfb><C:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fon
+ts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/Julia/AppData/Local/Programs/M
+iKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/Julia/AppData/Loca
+l/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/Julia/
+AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw/courier/ucrr8a.pfb><C:/Users/
+Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw/times/utmb8a.pfb><C:/Us
+ers/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw/times/utmr8a.pfb><C
+:/Users/Julia/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw/times/utmri8a.p
+fb>
+Output written on egpaper_final.pdf (3 pages, 489242 bytes).
 PDF statistics:
  72 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
