@@ -54,7 +54,7 @@ www.ethz.ch\\
 
 %%%%%%%%% ABSTRACT
 \begin{abstract}
-   The aim of our project is to produce omni-directional stereo images and videos, which are for example viewable in the Google Cardboard. The input for our pipeline are the images of a camera rig, which are stitched together for receiving omni-directional images. This process has to been carried out twice, once for the left and once for the right eye to get an omni-directional stereo image.
+   The aim of our project is to produce omni-directional stereo images and videos, which are for example viewable in the Google Cardboard, similar to Anderson et al.~\cite{jump16}. The input for our pipeline are the images of a camera rig, which are stitched together for receiving omni-directional images. This process has to been carried out twice, once for the left and once for the right eye to get an omni-directional stereo image.
 \end{abstract}
 
 %%%%%%%%% BODY TEXT
@@ -103,7 +103,7 @@ The ideal solution would be to have a stereo image pair for every head orientati
 
 %------------------------------------------------------------------------
 \section{Related work}
-The whole project is based on the paper "Jump: Virtual Reality Video" by Anderson et al. Therefore, our main pipeline is the same as described in Anderson et al. However, we did not implement the sophisticated algorithm for the flow computation. We used a provided method of OpenCV for the flow estimation. Furthermore, we simplified the exposure correction and the composition step. For the implementation details, we also used the article "Rendering Omni-directional Stereo Content" from Google.
+The whole project is based on a paper by Anderson et al.~\cite{jump16}, where a system for viewing omni-directional stereo videos, called 'Jump', is introduced. Therefore, our main pipeline is the same as described in Anderson et al.~\cite{jump16}. However, we did not implement the sophisticated algorithm for the flow computation. We used a provided method of OpenCV for the flow estimation. Furthermore, we simplified the exposure correction and the composition step. For the implementation details, we also used the article~\cite{ods} by Google Inc.
 
 %------------------------------------------------------------------------
 \section{Method}
@@ -132,22 +132,27 @@ $E_i=....$
 \end{figure}
 
 \subsection{Flow estimation}
-We did not implement such a sophisticated flow estimation algorithm as in Anderson et al. Instead, we used an existing per-pixel flow computation method from the OpenCV library.
+We did not implement such a sophisticated flow estimation algorithm as in Anderson et al.~\cite{jump16}. Instead, we used an existing per-pixel flow computation method from the OpenCV library.
 
 \subsection{Exposure correction}
-For the exposure correction, we interpolate linearly between the average image intensity of the neighboring image pairs.
-
+For the exposure correction, we interpolate linearly between the average image intensity of the neighboring image pairs:\\
+\\
+$g_{c}=\dfrac{(\theta_{c}-\theta_{0})}{(\theta_1-\theta_{0})}*g_{0} + \dfrac{(\theta_{1}-\theta_{c})}{(\theta_1-\theta_{0})}*g_{1}$
+\\
 \subsection{View interpolation}
-We used the following interpolation from Anderson et al. for our view interpolation:\\
-$\theta_p=\dfrac{(\theta_{b}-\theta_{1})*\theta_{0}(\theta_{0}-\theta_{a})*\theta_{1}}{\theta_{b}-\theta_{a}+\theta_{0}-\theta_{1}}$
-
+The main idea of the stitching process is to interpolated between two neighboring images.
+We used the following interpolation from Anderson et al.~\cite{jump16} for our view interpolation:\\
+\\
+$\theta_p=\dfrac{(\theta_{b}-\theta_{1})*\theta_{0}+(\theta_{0}-\theta_{a})*\theta_{1}}{\theta_{b}-\theta_{a}+\theta_{0}-\theta_{1}}$
+\\
+\\
 Where $\theta_ {0}$ and $\theta_ {1}$ are the headings of the two cameras in the ODS stitch. $\theta_ {a}$ is the heading of a point in the first camera and $\theta_ {b}$ is the heading of the same point in the second camera (see figure 7).
 
 \begin{figure}[t]
 \begin{center}
    \includegraphics[width=0.7\linewidth]{pictures/interpolation.png}
 \end{center}
-   \caption{This is an illustration of the different angles used in the interpolation formula.}
+   \caption{This is an illustration of the different angles used in the interpolation formula. The red lines are the central rays of the corresponding camera.}
 \label{fig:long}
 \label{fig:onecol}
 \end{figure}
