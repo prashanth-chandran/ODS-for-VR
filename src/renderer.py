@@ -290,10 +290,10 @@ class RendererODS():
 
 		camera_positions = self.camera_list.getCameraCentresXZ(origin)
 		viewing_circle_centre = self.camera_list.getViewingCircleCentre()
-		viewing_circle_radius = self.camera_list.getViewingCircleRadius()
+		rig_radius = self.camera_list.getViewingCircleRadius()
 
-		if ipd > viewing_circle_radius:
-			raise RuntimeError('IPD cannot be greater than the radius of the viewing circle')
+		if ipd > rig_radius:
+			raise RuntimeError('IPD cannot be greater than the radius of the camera rig.')
 
 		for i in range(0, nc):
 			theta = getAngle(viewing_circle_centre, camera_positions[i, :], ipd)
@@ -312,7 +312,6 @@ class RendererODS():
 
 			col_index = int(unnormalizeX(xn, pan_width))
 			# Map this camera to an angle on the viewing circle.
-
 			cam_theta = mapPointToODSAngle(camera_positions[i, :], viewing_circle_centre, ipd, eye)
 
 			print('camera ', i, 'maps to: ', 'angle: ', radians2Degrees(cam_theta), 'column: ',  col_index)
@@ -325,13 +324,7 @@ class RendererODS():
 			print(int(self.camera_list[i].resolution[0]))
 			for col in range(0, int(self.camera_list[i].resolution[0])):
 				# Setting row index to zero, because it doesn't really matter
-				ray = self.camera_list[i].getRayForPixel(col, 0)
-				# Normalize and convert ray to 4D homogenous co-ordinates
-				ray = unit_vector(ray)
-				ray = np.append(ray, 1)
-				# Transfer this ray into global co-ordinates by multiplying it with this 
-				# camera's extrinsics matrix
-				global_ray = np.dot(self.camera_list[i].extrinsics_absolute, ray)
+				global_ray = self.camera_list[i].getRayForPixelInGlobalRef(col, 0)
 				# Store the XZ co-ordinates of the global ray separately for easy processing
 				global_ray_xz = np.asarray([global_ray[0], global_ray[2]])
 				# Find the angle for this ray in the global frame of reference
@@ -356,140 +349,137 @@ class RendererODS():
 		return output_image
 
 
+	# View interpolater
+	def viewInterpolationCwise(self, cameraLeftID, cameraRightID, frameIDLeft, frameIDRight, pan_width, 
+		direction='left2right', origin=[0, 0, 0], ipd=0.062, eye=-1):
+		# Do sanity checks
+		# Check if all IDs are valid.
+		camLeft = self.camera_list[cameraLeftID]
+		camRight = self.camera_list[cameraRightID]
+		imageLeft = self.image_list[frameIDLeft].getImage()
+		imageRight = self.image_list[frameIDRight].getImage()
+
+		# Resolution of both the left and right are assumed to be the same. Taking the left image
+		# here as the reference.
+		image_width = camLeft.resolution[0]
+		image_height = camLeft.resolution[1]
+		output_image = np.zeros((int(image_height), int(pan_width), 3), dtype='uint8')
+
+		# get and store renderer globals locally for computation
+		camera_positions = self.camera_list.getCameraCentresXZ(origin)
+		viewing_circle_centre = self.camera_list.getViewingCircleCentre()
+		camera_rig_radius = self.camera_list.getViewingCircleRadius()
+
+		cameraLeftPosition = camera_positions[cameraLeftID]
+		cameraRightPosition = camera_positions[cameraRightID]
+
+		# Find where the two incoming cameras map onto the viewing circle. These form theta_0 and theta_1
+		theta_0 = mapPointToODSAngle(cameraLeftPosition, viewing_circle_centre, ipd, eye)
+		theta_1 = mapPointToODSAngle(cameraRightPosition, viewing_circle_centre, ipd, eye)
+		theta_0_degree = radians2Degrees360(theta_0)
+		theta_1_degree = radians2Degrees360(theta_1)
+
+		if direction is 'left2right':
+			start_col = camLeft.getCOPLeft()
+			end_col = image_width
+			camFirst = camLeft
+			camSecond = camRight
+			imageFirst = imageLeft
+			imageSecond = imageRight
+		elif direction is 'right2left':
+			start_col = 0
+			end_col = camLeft.getCOPLeft()
+			camFirst = camRight
+			camSecond = camLeft
+			imageFirst = imageRight
+			imageSecond = imageLeft
+		else:
+			raise RuntimeError('Unsupported view interpolation direction : ', direction)
+
+		# Debug prints
+		# print('start_col: ', start_col, '\tend col: ', end_col)
+		# print('theta_0: ', theta_0_degree, '\ttheta_1: ', theta_1_degree)
+
+		# Optical flow calculator
+		of = OpticalFlowCalculator()
+		flow = of.calculateFlow(imageFirst, imageSecond)
+
+		for col_id in range(start_col, end_col):
+			ray_first = camFirst.getRayForPixelInGlobalRef(col_id, 0)
+			ray_first_xz = np.asarray((ray_first[0], ray_first[2]), dtype='float32')
+			theta_a = mapPointToODSAngle(ray_first_xz, viewing_circle_centre, ipd, eye)
+			theta_a_degree = radians2Degrees360(theta_a)
+
+			# Get horizontal flow for the current column
+			col_flow = flow[:, col_id, 1]
+			mean_flow = np.mean(col_flow)
+
+			col_id_correspondence = col_id + mean_flow
+			ray_second = camSecond.getRayForPixelInGlobalRef(col_id_correspondence, 0)
+			ray_second_xz = np.asarray((ray_second[0], ray_second[2]), dtype='float32')
+			theta_b = mapPointToODSAngle(ray_second_xz, viewing_circle_centre, ipd, eye)
+			theta_b_degree = radians2Degrees360(theta_b)
+
+			theta_p_degree = self.normalizeThenInterpolate(theta_0_degree, theta_1_degree, theta_a_degree, theta_b_degree)
+			theta_p = degrees3602Radians(theta_p_degree)
+
+			xn_new = thetaToNormalizedX(theta_p)
+			# Make sure xn_new is between 0 and 1.
+			xn_new = np.clip(xn_new, 0, 1)
+			ods_column = int(unnormalizeX(xn_new, pan_width))
+			# print(col_id, theta_a_degree, theta_b_degree, theta_p_degree, ods_column)
+			output_image[:, ods_column, :] = imageFirst[:, col_id, :]
+
+		return output_image
+
+
+
 	def renderODSTests(self, ipd, output_image_dim, eye=-1, origin=[0, 0, 0]):
 		self.sanityCheck()
 		height = output_image_dim[0]
 		width = output_image_dim[1]
-
 		output_image = np.zeros((height, width, 3), dtype='uint8')
 
 		camera_positions = self.camera_list.getCameraCentresXZ(origin)
 		viewing_circle_centre = self.camera_list.getViewingCircleCentre()
-		viewing_circle_radius = self.camera_list.getViewingCircleRadius()
+		rig_radius = self.camera_list.getViewingCircleRadius()
 
-		if ipd > viewing_circle_radius:
+		if ipd > rig_radius:
 			raise RuntimeError('IPD too large')
 
 		nc = self.camera_list.getNumCameras()
-
-		of = OpticalFlowCalculator()
-
+		# Order of the cameras in the rig
 		camera_order = [0, 1, 2, 3, 8, 9, 6, 7, 4, 5, 0]
+		# setup cameras for rendering
 		for i in range(0, nc):
 			theta = getAngle(viewing_circle_centre, camera_positions[i, :], ipd)
 			self.camera_list[i].setCOPRelativeAngleLeft(theta)
 			self.camera_list[i].setCOPRelativeAngleRight(theta)
 
-			xnl_1 = mapCameraToSphere(camera_positions[i, :], viewing_circle_centre, ipd, -1)
-			xnl_2 = mapPointToODSColumn(camera_positions[i, :], viewing_circle_centre, ipd, -1)
-			xnr_2 = mapPointToODSColumn(camera_positions[i, :], viewing_circle_centre, ipd, 1)
-			self.camera_list[i].setPositionInODSImageLeft(xnl_2)
-			self.camera_list[i].setPositionInODSImageRight(xnr_2)
-			print('camera number: ', i, xnl_1, xnl_2)
+			xnl = mapPointToODSColumn(camera_positions[i, :], viewing_circle_centre, ipd, -1)
+			xnr = mapPointToODSColumn(camera_positions[i, :], viewing_circle_centre, ipd, 1)
+			self.camera_list[i].setPositionInODSImageLeft(xnl)
+			self.camera_list[i].setPositionInODSImageRight(xnr)
 
-		# list storing optical flow computed between image pairs
-		flows=[]
-		hahacams = 10
-		for i in range(hahacams):	
+		# View interpolation
+		cam_start = 0
+		cam_end = 10
+		for cam in range(cam_start, cam_end, 2):
+			tempL2R = self.viewInterpolationCwise(camera_order[cam], camera_order[cam+1], 
+				camera_order[cam], camera_order[cam+1], width, direction='left2right',
+				origin=origin, ipd=ipd, eye=eye)
+			output_image = output_image + tempL2R
 
-			index0 = camera_order[i]
-			index1 = camera_order[i+1]
-			
-			image0 = self.image_list[index0].getImage()			
-			image1 = self.image_list[index1].getImage()
-			
-			flow_i = of.calculateFlow(image0, image1)
-			flows.append(flow_i)
-		
-		all_flows = np.asarray(flows)
-		print('flow dim: ', all_flows.shape)
-
-		k = 0
-		for i in range(0, 1):
-			index0 = camera_order[i]
-			index1 = camera_order[i+1]
-			cam0 = self.camera_list[index0]
-			cam1 = self.camera_list[index1]
-			cam_position0 = camera_positions[index0, :]
-			cam_position1 = camera_positions[index1, :]
-			
-			image0 = self.image_list[index0].getImage()			
-			image1 = self.image_list[index1].getImage()
-			
-			image_width = int(cam0.resolution[0])
-			image_height = int(cam0.resolution[1])
-
-			theta_0 = mapPointToODSAngle(cam_position0, viewing_circle_centre, ipd, eye)
-			theta_1 = mapPointToODSAngle(cam_position1, viewing_circle_centre, ipd, eye)
-			print(theta_0, theta_1)
-			theta_0_degree = radians2Degrees360(theta_0)
-			theta_1_degree = radians2Degrees360(theta_1)
-			
-			print("theta_0_degree")
-			print(theta_0_degree)
-			print("theta_1_degree")
-			print(theta_1_degree)
-			
-			
-			x0=int(round(cam0.getCOPLeft()[0]))
-			#x0=int(round(cam0.getCOPLeft()))
-			print('x0: ', x0)
-			print(x0)
-			print('Normalized Position x0: ', cam0.getPositionInODSImageLeft())
-			x0_ODS=int(unnormalizeX(cam0.getPositionInODSImageLeft(),width))
-
-			
-		
-			x1=int(round(cam1.getCOPLeft()[0]))
-			#x1=int(round(cam1.getCOPLeft()))
-			print('x1: ', x1)
-			print(x1)
-			print( 'Normalized Position x0: ', cam1.getPositionInODSImageLeft())
-			x1_ODS=int(unnormalizeX(cam1.getPositionInODSImageLeft(),width))
-
-			field_of_view = self.camera_list[i].fov_x
-			print('FOV Cam: ', radians2Degrees(field_of_view))
-
-			for j in range(0, image_width):
-				ray_a = cam0.getRayForPixel(j, 0)
-				ray_a = np.append(ray_a,1)
-				global_ray_a = np.dot(cam0.extrinsics_absolute, ray_a)
-				global_ray_a_xz = np.asarray([global_ray_a[0], global_ray_a[2]])
-				theta_a = mapPointToODSAngle(global_ray_a_xz, viewing_circle_centre, ipd, eye)
-				if theta_a > theta_0:
-					continue
-				theta_a_xn = mapPointToODSColumn(global_ray_a_xz, viewing_circle_centre, ipd, eye)
-				# print('Theta a xn: ', theta_a_xn)
-
-				col_flows = all_flows[k, :,  j, 1]
-				sum = np.sum(col_flows)
-				avg = int(sum/image_height)
-				j_flowed = j + avg
-				print('flow : ', j, j_flowed)
-				ray_b = cam1.getRayForPixel(j_flowed, 0)
-				ray_b = np.append(ray_b, 1)
-				global_ray_b = np.dot(cam1.extrinsics_absolute, ray_b)
-				global_ray_b_xz = np.asarray([global_ray_b[0], global_ray_b[2]])
-				theta_b = mapPointToODSAngle(global_ray_b_xz, viewing_circle_centre, ipd, eye)
-				theta_b_xn = mapPointToODSColumn(global_ray_b_xz, viewing_circle_centre, ipd, eye)
-				# print('Theta b xn: ', theta_b_xn)
-
-				theta_a_degree = radians2Degrees360(theta_a)
-				theta_b_degree = radians2Degrees360(theta_b)
-				
-
-				theta_p_degree = self.normalizeThenInterpolate(theta_0_degree, theta_1_degree, theta_a_degree, theta_b_degree)
-				print('theta a, b & p (degrees)', theta_a_degree, theta_b_degree, theta_p_degree)
-				theta_p = degrees3602Radians(theta_p_degree)
-
-				x_i = thetaToNormalizedX(theta_p)
-				col_i = int(unnormalizeX(x_i, width))
-				image = self.image_list[index0]
-				if 0<j<image_width:
-					if 0<col_i<width:
-							output_image[:, col_i, :] = image.getColumn(j)
+		for cam in range(cam_start, cam_end, 2):
+			tempL2R = self.viewInterpolationCwise(camera_order[cam], camera_order[cam+1], 
+				camera_order[cam], camera_order[cam+1], width, direction='right2left',
+				origin=origin, ipd=ipd, eye=eye)
+			output_image = output_image + tempL2R
 
 		return output_image
+
+
+
 
 
 	def renderCOPSOnly(self, ipd, output_image_dim, eye=-1, origin=[0, 0, 0]):

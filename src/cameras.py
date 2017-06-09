@@ -72,21 +72,22 @@ class Camera:
         if self.init_complete is False:
             raise RuntimeError('Camera not initialized. Initialize camera before using it.')
 
-    def getRayForPixel(self, x, y):
+    def getRayForPixelInLocalRef(self, x, y):
         self.cameraSanityCheck()
+        # print('local')
+        # print(x, y)
         pix_homo = np.asarray([x, y, 1], dtype='float32')
         # print(self.intrinsics)
         # print(self.intrinsics_inverse)
         ray = np.dot(self.intrinsics_inverse, pix_homo)
-        # print(ray)
         return ray
 
-    def transformRayToCameraRef(self, ray, camera_extrinsics):
+    def getRayForPixelInGlobalRef(self, col, row):
         self.cameraSanityCheck()
-        ray_homogeneous = np.append(ray, 1)
-        ray=np.dot(camera_extrinsics, ray_homogeneous)
-        #normalize ray again
-        return ray[0:3]/ray[3]
+        local_ray = self.getRayForPixelInLocalRef(col, row)
+        ray_homogeneous = np.append(local_ray, 1)
+        global_ray = np.dot(self.extrinsics_absolute, ray_homogeneous)
+        return global_ray[0:3]
 
     def getFieldOfView(self):
         return self.fov_x
