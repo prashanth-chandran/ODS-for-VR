@@ -44,8 +44,10 @@ class Camera:
         self.fov_x = 2*np.arctan2(self.resolution[0]/2, self.fx)
         self.intrinsics[1][1] = intrinsics_vector[1]
         self.fy = intrinsics_vector[1]
-        self.intrinsics[0][2] = intrinsics_vector[2]/self.resolution[0]
-        self.intrinsics[1][2] = intrinsics_vector[3]/self.resolution[1]
+        self.intrinsics[0][2] = intrinsics_vector[2]
+        self.hor_offset = intrinsics_vector[2]/self.resolution[0]
+        print(self.hor_offset)
+        self.intrinsics[1][2] = intrinsics_vector[3]
         self.intrinsics[2][2] = 1
         self.favg = (self.fx + self.fy)/2
         self.intrinsics_inverse = np.linalg.inv(self.intrinsics)
@@ -73,7 +75,10 @@ class Camera:
     def getRayForPixel(self, x, y):
         self.cameraSanityCheck()
         pix_homo = np.asarray([x, y, 1], dtype='float32')
+        # print(self.intrinsics)
+        # print(self.intrinsics_inverse)
         ray = np.dot(self.intrinsics_inverse, pix_homo)
+        # print(ray)
         return ray
 
     def transformRayToCameraRef(self, ray, camera_extrinsics):
@@ -97,9 +102,9 @@ class Camera:
         norm_fac = np.tan(self.fov_x)*self.fx
         norm = norm/norm_fac
         if offsetByWidth:
-            norm = norm + 0.5
+            norm = norm + self.hor_offset
         else:
-            norm = 0.5-norm
+            norm = self.hor_offset - norm
         # Do not let values go beyond 0 and 1
         np.clip(norm, 0.0, 1.0)
         return unnormalizeX(norm, self.resolution[0])
@@ -222,13 +227,13 @@ class CameraCollection():
     def getNumCameras(self):
         return self.num_cameras
 
-    def visualizeCameras(self, origin):
+    def visualizeCameras(self, origin, ipd=0.062):
         self.updateCameraXZLocations(origin)
         centre = self.getViewingCircleCentre()
         self.planar_camera_positions[:, :] = self.planar_camera_positions[:, :] #- centre
         # centre = (0,0)
         # test IPD
-        ipd = self.getViewingCircleRadius()/2
+        print('VC radius:', self.getViewingCircleRadius())
         # Plot camera locations with their names
         fig, ax = pyplt.subplots()
         ax.scatter(self.planar_camera_positions[:, 0], self.planar_camera_positions[:, 1])
@@ -243,15 +248,15 @@ class CameraCollection():
         ax.scatter(centre[0], centre[1], color='red')
         ax.annotate('Centre', (centre[0], centre[1]))
 
-        viewing_circle = getCirclePoints(centre, ipd)
+        viewing_circle = getCirclePoints(centre, ipd/2)
         print(ipd)
         ax.scatter(viewing_circle[:, 0],viewing_circle[:, 1], color='red')
 
         # Plot left eye tangent points for the left eye
         for i in range(self.num_cameras):
-            point_right = genPointOnViewingCircle(centre, self.planar_camera_positions[i, :], ipd)
-            point_left = genPointOnViewingCircle(centre, self.planar_camera_positions[i, :], ipd, eye=-1)
-            ax.scatter(point_right[0], point_right[1],color='orange')
+            point_right = get2DPointOnODSVC(self.planar_camera_positions[i, :], centre, ipd, eye=1)
+            point_left = get2DPointOnODSVC(self.planar_camera_positions[i, :], centre, ipd, eye=-1)
+            ax.scatter(point_right[0], point_right[1], color='orange')
             ax.annotate(str(i) + 'R', (point_right[0], point_right[1])
                 , xytext=(point_right[0]+0.0001, point_right[1]+0.0001))
             ax.scatter(point_left[0], point_left[1],color='green')
