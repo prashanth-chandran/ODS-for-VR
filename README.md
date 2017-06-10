@@ -4,9 +4,11 @@ This repository is an implementation of the omni directional stereo renderer use
 # Camera rig description
 The camera rig in our dataset consists of 10 cameras setup as shown below.
 ![camera-rig](results/rig.png)
+
 Though for ideal ODS rendering, we would like our cameras to be oriented radially outwards from the viewing circle, our rig 
 consists of pairs of stereoscopic cameras. The images captured by the rig, as visualized on the 'xz' plane are as shown below. 
 ![camera-rig-detailed](results/rig_detailed.png)
+
 We see that the rig is primarily composed of 5 stereo pairs. The overlap between adjacent stereo pairs is very minimal. Therefore, 
 though we have 10 cameras, we predominantly see only 5 image planes resembling a pentagon. 
 
