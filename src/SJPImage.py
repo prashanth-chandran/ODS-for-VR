@@ -202,21 +202,6 @@ class SJPImageCollection:
 		self.num_images = self.num_images + 1
 
 
-	def stitchImagesInCollection(self, dest_image_size):
-		# Iterate over all cameras in this collection
-		# Get image with this camera ID
-		# For every camera
-			# verify the integrity of this sjp_image
-			# check if it has an cv_image
-			# check if it has neighbours set
-			# check if it has keypoints
-				# if not calculate keypoints
-			# check if it has left and right homographies
-				# if not calculate and update homographies, matches
-			# update overlapping regions
-
-		pass
-
 	def loadImagesFromYAML(self, file_name, cam_name):
 		with open(file_name, 'r') as stream:
 			try:

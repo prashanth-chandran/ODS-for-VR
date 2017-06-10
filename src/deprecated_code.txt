@@ -1,0 +1,202 @@
+	def renderCOPSOnly(self, ipd, output_image_dim, eye=-1, origin=[0, 0, 0]):
+		self.sanityCheck()
+		height = output_image_dim[0]
+		width = output_image_dim[1]
+		print("ODS width")
+		print(width)
+		
+		output_image = np.zeros((output_image_dim[0], output_image_dim[1], 3), dtype='uint8')
+
+		camera_positions = self.camera_list.getCameraCentresXZ(origin)
+		viewing_circle_centre = self.camera_list.getViewingCircleCentre()
+		viewing_circle_radius = self.camera_list.getViewingCircleRadius()
+		# IPD cannot be greater than the radius of the viewing circle
+		if ipd > viewing_circle_radius:
+			raise RuntimeError('IPD cannot be greater than the radius of the viewing circle')
+
+		num_cameras = self.camera_list.getNumCameras()
+		
+		oF = OpticalFlowCalculator()
+		
+		# Set COP for every camera and do other things before view interpolation.
+		for i in range(num_cameras):
+			theta = getAngle(viewing_circle_centre, camera_positions[i, :], ipd)
+			self.camera_list[i].setCOPRelativeAngleLeft(theta)
+			self.camera_list[i].setCOPRelativeAngleRight(theta)
+
+			xn_left = mapCameraToSphere(camera_positions[i, :], viewing_circle_centre, ipd, -1)
+			# xn_left = mapPointToODSColumn(camera_positions[i, :], viewing_circle_centre, ipd, -1)
+			self.camera_list[i].setPositionInODSImageLeft(xn_left)
+			xn_right = mapCameraToSphere(camera_positions[i, :], viewing_circle_centre, ipd, 1)
+			# xn_right = mapPointToODSColumn(camera_positions[i, :], viewing_circle_centre, ipd, 1)
+			self.camera_list[i].setPositionInODSImageRight(xn_right)
+
+			if eye is 1:
+				xn = xn_right
+				col_img = self.camera_list[i].getCOPRight()
+			else:
+				xn = xn_left
+				col_img = self.camera_list[i].getCOPLeft()
+
+			col_index = int(unnormalizeX(xn, width))
+
+			if self.image_list is None:
+				output_image[:, col_index, :] = [127, 127, 127]
+			else:
+				print(col_img)
+				image = self.image_list[i]
+				output_image[:, col_index, :] = image.getColumn(int(col_img))
+				#output_image[:, col_index, :] = [0, 0, 255]
+
+		cameras=[0, 1, 2, 3, 8, 9, 6, 7, 4, 5, 0]
+		#cameras=[0, 5, 4, 7, 6, 9, 8, 3, 2, 1, 0]
+
+		flows=[]
+		
+		hahacams = 10
+		for i in range(hahacams):	
+
+			index0=cameras[i]
+			index1=cameras[i+1]
+			
+			image0=self.image_list[index0].getImage()			
+			image1=self.image_list[index1].getImage()
+			
+			flow_i=oF.calculateFlow(image0, image1)
+			flows.append(flow_i)
+		
+		all_flows=np.asarray(flows)
+		print(all_flows.shape)
+		
+		k=0
+		#view interpolation
+		for i in range(hahacams):
+
+			index0=cameras[i]
+			index1=cameras[i+1]
+			cam0=self.camera_list[index0]
+			cam1=self.camera_list[index1]
+			cam_position0=camera_positions[index0, :]
+			cam_position1=camera_positions[index1, :]
+			
+			image0=self.image_list[index0].getImage()			
+			image1=self.image_list[index1].getImage()
+			
+			image_width=int(cam0.resolution[0])
+			image_height=int(cam0.resolution[1])
+			
+			relative_theta_0=cam0.getCOPRelativeAngleLeft()
+			relative_theta_1=cam1.getCOPRelativeAngleLeft()
+			
+
+			
+			#theta_0_saved=normalizedXToTheta(cam0.getPositionInODSImageLeft())
+			#theta_1_saved=normalizedXToTheta(cam1.getPositionInODSImageLeft())
+			theta_0=mapPointToPanaromaAngle(cam_position0, viewing_circle_centre, ipd, eye)
+			theta_1=mapPointToPanaromaAngle(cam_position1, viewing_circle_centre, ipd, eye)
+			
+			theta_0_degree=radians2Degrees360(theta_0)
+			theta_1_degree=radians2Degrees360(theta_1)
+			
+			print("theta_0_degree")
+			print(theta_0)
+			print("theta_1_degree")
+			print(theta_1)		
+			
+			
+			x0=int(round(cam0.getCOPLeft()[0]))
+			#x0=int(round(cam0.getCOPLeft()))
+			print('x0: ', x0)
+			print(x0)
+			print('Normalized Position x0: ', cam0.getPositionInODSImageLeft())
+			x0_ODS=int(unnormalizeX(cam0.getPositionInODSImageLeft(),width))
+
+			
+		
+			x1=int(round(cam1.getCOPLeft()[0]))
+			#x1=int(round(cam1.getCOPLeft()))
+			print('x1: ', x1)
+			print(x1)
+			print( 'Normalized Position x0: ', cam1.getPositionInODSImageLeft())
+			x1_ODS=int(unnormalizeX(cam1.getPositionInODSImageLeft(),width))
+
+			field_of_view = self.camera_list[i].fov_x
+			print('FOV Cam: ', radians2Degrees(field_of_view))
+
+
+			for j in range(x0+1, image_width):
+				ray_a = cam0.getRayForPixel(j, 0)
+				ray_a = unit_vector(ray_a)
+				ray_a=np.append(ray_a,1)
+				global_ray_a=np.dot(cam0.extrinsics_absolute, ray_a)
+				global_ray_a_xz=np.asarray([global_ray_a[0], global_ray_a[2]])
+				theta_a = mapPointToPanaromaAngle(global_ray_a_xz, viewing_circle_centre, ipd, eye)
+
+				col_flows =all_flows[k, :,  j, 1]
+				sum=np.sum(col_flows)
+				avg=int(sum/image_height)
+				j_flowed = j + avg
+				
+				ray_b = cam1.getRayForPixel(j_flowed, 0)
+				ray_b = unit_vector(ray_b)
+				ray_b=np.append(ray_b,1)
+				global_ray_b=np.dot(cam1.extrinsics_absolute, ray_b)
+				global_ray_b_xz=np.asarray([global_ray_b[0], global_ray_b[2]])
+				theta_b = mapPointToPanaromaAngle(global_ray_b_xz, viewing_circle_centre, ipd, eye)
+
+				theta_a_degree=radians2Degrees360(theta_a)
+				theta_b_degree=radians2Degrees360(theta_b)
+				
+
+				theta_p_degree = self.normalizeThenInterpolate(theta_0_degree, theta_1_degree, theta_a_degree, theta_b_degree)
+				theta_p=degrees3602Radians(theta_p_degree)
+
+				x_i=thetaToNormalizedX(theta_p)
+				col_i=int(unnormalizeX(x_i, width))
+				image = self.image_list[index0]
+				if 0<j<image_width:
+					if 0<col_i<width:
+							output_image[:, col_i, :] =(0.5*output_image[:, col_i, :])+(0.5*image.getColumn(j))
+							pass
+
+			
+			#We might have to change the interpolation formula for the backwards interpolation
+			for j in range(0, x0):
+				ray_a = cam1.getRayForPixel(j, 0)
+				ray_a = unit_vector(ray_a)
+				ray_a=np.append(ray_a,1)
+				global_ray_a=np.dot(cam1.extrinsics_absolute, ray_a)
+				global_ray_a_xz=np.asarray([global_ray_a[0], global_ray_a[2]])
+				theta_a = mapPointToPanaromaAngle(global_ray_a_xz, viewing_circle_centre, ipd, eye)
+				
+				col_flows =all_flows[k, :,  j, 1]
+				sum=np.sum(col_flows)
+				avg=int(sum/image_height)
+				j_flowed = j -avg
+				
+				ray_b = cam0.getRayForPixel(j_flowed, 0)
+				ray_b = unit_vector(ray_b)
+				ray_b=np.append(ray_b,1)
+				global_ray_b=np.dot(cam0.extrinsics_absolute, ray_b)
+				global_ray_b_xz=np.asarray([global_ray_b[0], global_ray_b[2]])
+				theta_b = mapPointToPanaromaAngle(global_ray_b_xz, viewing_circle_centre, ipd, eye)					
+
+				theta_a_degree=radians2Degrees360(theta_a)
+				theta_b_degree=radians2Degrees360(theta_b)
+			
+				theta_p_degree = self.normalizeThenInterpolate(theta_0_degree, theta_1_degree, theta_b_degree, theta_a_degree)
+				theta_p=degrees3602Radians(theta_p_degree)
+
+				x_i=thetaToNormalizedX(theta_p)
+				col_i=int(unnormalizeX(x_i, width))
+				image = self.image_list[index0]
+				#if 0<j<image_width:
+				#	if 0<col_i<width:
+							#output_image[:, col_i, :] =(0.5*output_image[:, col_i, :])+(0.5*image.getColumn(j))	
+			
+			k=k+1
+					
+
+	
+
+		return output_image

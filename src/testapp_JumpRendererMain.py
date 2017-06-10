@@ -12,22 +12,6 @@ def arg_setup():
 	args = vars(ap.parse_args())
 	return args
 
-def test_renderer():
-	args = arg_setup()
-	img_name = args["first"]
-	calib_file_name = args["second"]
-	sjpimage = SJPImage(file_name=img_name)
-	yaml_data = load_camera_calibration_data(calib_file_name)
-	cam1 = Camera()
-	cam1.loadCameraFromYaml(yaml_data, 'cam0')
-	print(cam1.getIntrinsics(), cam1.getExtrinsics())
-	r = Renderer()
-	out_dim = [400, 800]
-	out_image = r.renderImage(sjpimage.getImage(), cam1, out_dim)
-	cv2.imshow('result', out_image)
-	cv2.waitKey(0)
-
-
 def test_cameraRig_visualization():
 	args = arg_setup()
 	cam_file = args["second"]
@@ -54,22 +38,19 @@ def test_ODS_renderer():
 	rods.setImageList(ic0)
 	rods.setCameraList(cc)
 
-	# vis_image = rods.visualizeProjectionCentres([255, 800])
-	# Rendering function from yesterday: 
-	#vis_image_left = rods.renderCOPSOnly(0.045/2, [480, 960])
-	vis_image_left = rods.renderCOPSOnly(0.062, [480, 960])
+	# pan_for_eye = rods.render360WithViewInterpolation(0.062, [480, 960], eye=-1)
+	# cv2.imshow('ODS panaroma: ', pan_for_eye)
 
-	# This function goes over every camera in the list and plots the start, middle and end
-	# points of its images in the global frame. The mapping of these points onto the viewing circle
-	# is also plotted. 
-	#rods.renderGlobalVisTest(0.045/2, [480, 960])
+	# This function goes over every camera in the list and plots image planes in the global frame. 
+	# These points are also mapped onto the viewing circle.
+	# rods.rigVisTest(0.062, [480, 960], eye=-1)
 
-	#vis_image_right = rods.renderStuffBruh(0.045/2, [480, 960], eye=1)
-	#cv2.imshow('Projection centres right: ', vis_image_right)
-	# vis_image_left = rods.renderStuffBruh(0.045/2, [480, 960], eye=-1)
+	# vis_image_right = rods.render360NoInterpolation(0.062, [480, 960], eye=1)
+	# cv2.imshow('Projection centres right: ', vis_image_right)
+	vis_image_left = rods.render360NoInterpolation(0.062, [480, 960], eye=-1)
 	cv2.imshow('Projection centres left: ', vis_image_left)
 	
-	scipy.misc.imsave('fifth_stitch.jpg', vis_image_left)
+	# scipy.misc.imsave('fifth_stitch.jpg', vis_image_left)
 	cv2.waitKey(0)
 
 
@@ -88,9 +69,8 @@ def test_data_loader():
 
 
 def main():
-	# test_renderer()
 	test_ODS_renderer()
-	#test_cameraRig_visualization()
+	# test_cameraRig_visualization()
 	# test_data_loader()
 
 

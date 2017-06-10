@@ -43,13 +43,3 @@ class OpticalFlowCalculator:
 
 # End class OpticalFlow
 
-# class ViewSynthesizer:
-# take two adjacent frames
-# Calculate optical flow between the two frames
-# User specifies how many new views are needed between these two frames.
-# Divide flow vector into smaller flows
-	# For every pixel in the image,
-	# Splat with a 4 neighbourhood kernel (0.25) weight.
-	# Return new view
-# end class ViewSynthesizer
-

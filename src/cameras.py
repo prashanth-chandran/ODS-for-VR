@@ -13,11 +13,6 @@ class Camera:
         self.extrinsics_relative = np.zeros((4,4), dtype='float32')
         # Current calibration file does not have absolute parameters
         self.extrinsics_absolute = np.identity(4, dtype='float32')
-        # Adaptation of extrinsic matrix of cam0 with respect to the Euclidean coordinate system
-        # self.extrinsics_absolute[1][1] = 0
-        # self.extrinsics_absolute[2][2] = 0
-        # self.extrinsics_absolute[1][2] = 1
-        # self.extrinsics_absolute[2][1] = 1
         self.distortion = np.zeros((4, 1), dtype='float32')
         self.resolution = np.zeros((2, 1), dtype='int32')
         self.fx = 0
@@ -46,7 +41,6 @@ class Camera:
         self.fy = intrinsics_vector[1]
         self.intrinsics[0][2] = intrinsics_vector[2]
         self.hor_offset = intrinsics_vector[2]/self.resolution[0]
-        print(self.hor_offset)
         self.intrinsics[1][2] = intrinsics_vector[3]
         self.intrinsics[2][2] = 1
         self.favg = (self.fx + self.fy)/2
@@ -55,7 +49,6 @@ class Camera:
         try:
             self.extrinsics_relative = yaml_calibration[cam_name]['T_cn_cnm1']
         except Exception as e:
-            #shift=[[0, 0, 0, 1], [0, 0, 0, 0], [0, 0, 0, 1],[0, 0, 0, 0]]
             self.extrinsics_relative = np.identity(4, dtype='float32')
         self.distortion = yaml_calibration[cam_name]['distortion_coeffs']
         self.init_complete = True
@@ -74,11 +67,7 @@ class Camera:
 
     def getRayForPixelInLocalRef(self, x, y):
         self.cameraSanityCheck()
-        # print('local')
-        # print(x, y)
         pix_homo = np.asarray([x, y, 1], dtype='float32')
-        # print(self.intrinsics)
-        # print(self.intrinsics_inverse)
         ray = np.dot(self.intrinsics_inverse, pix_homo)
         return ray
 
@@ -158,6 +147,8 @@ class CameraCollection():
         self.num_cameras = 0
         self.planar_camera_positions = None
         self.init_complete = False
+        self.rig_centre_estimated = False
+        self.rig_centre = None
 
     def sanityCheck(self):
         if not self.init_complete:
@@ -217,9 +208,13 @@ class CameraCollection():
         # Fit a circle to locations of cameras 0, 2 and 8
         if self.planar_camera_positions is None:
             self.updateCameraXZLocations([0, 0, 0])
-        centre = fitCircleTo3Points(self.planar_camera_positions[0, :],
-            self.planar_camera_positions[7, :], self.planar_camera_positions[8, :])
-        return centre
+        if self.rig_centre_estimated is False:
+            centre = fitCircleTo3Points(self.planar_camera_positions[0, :],
+                self.planar_camera_positions[7, :], self.planar_camera_positions[8, :])
+            self.rig_centre = centre
+            self.rig_centre_estimated = True
+
+        return self.rig_centre
 
     def getViewingCircleRadius(self):
         centre = self.getViewingCircleCentre()
