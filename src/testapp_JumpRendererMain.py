@@ -1,6 +1,7 @@
 from renderer import *
 from cameras import *
 from SJPImage import *
+import matplotlib.pyplot as pyplt
 import argparse
 import scipy.misc
 
@@ -38,20 +39,19 @@ def test_ODS_renderer():
 	rods.setImageList(ic0)
 	rods.setCameraList(cc)
 
-	# pan_for_eye = rods.render360WithViewInterpolation(0.062, [480, 960], eye=-1)
-	# cv2.imshow('ODS panaroma: ', pan_for_eye)
+	pan_for_eye = rods.render360WithViewInterpolation(0.062, [480, 2000], eye=-1)
+	pyplt.subplot(211), pyplt.imshow(pan_for_eye), pyplt.axis('off'), pyplt.title('360 - View interpolation')
 
 	# This function goes over every camera in the list and plots image planes in the global frame. 
 	# These points are also mapped onto the viewing circle.
 	# rods.rigVisTest(0.062, [480, 960], eye=-1)
 
-	# vis_image_right = rods.render360NoInterpolation(0.062, [480, 960], eye=1)
-	# cv2.imshow('Projection centres right: ', vis_image_right)
-	vis_image_left = rods.render360NoInterpolation(0.062, [480, 960], eye=-1)
-	cv2.imshow('Projection centres left: ', vis_image_left)
-	
+	# vis_image_right = rods.render360NoInterpolation(0.062, [480, 2000], eye=1)
+	# pyplt.subplot(211), pyplt.imshow(vis_image_right), pyplt.axis('off'), pyplt.title('360 - No interpolation - Left eye')
+	# vis_image_left = rods.render360NoInterpolation(0.062, [480, 2000], eye=-1)
+	# pyplt.subplot(212), pyplt.imshow(vis_image_left), pyplt.axis('off'), pyplt.title('360 - No interpolation - Right eye eye')
 	# scipy.misc.imsave('fifth_stitch.jpg', vis_image_left)
-	cv2.waitKey(0)
+	pyplt.show()
 
 
 def test_data_loader():

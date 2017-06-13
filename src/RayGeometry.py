@@ -188,18 +188,6 @@ def xzToTheta(xz, origin):
 	vec = xz-origin
 	return np.arctan2(vec[1], vec[0])
 
-def mapCameraToSphere(camera_pos, origin, ipd, eye=1):
-	point_on_circle = np.asarray(getPointOnVC(origin, camera_pos, ipd, eye=eye))
-	return thetaToNormalizedX(xzToTheta(point_on_circle, origin))
-
-def mapPointToPanaromaAngle(point, origin, ipd, eye=1):
-	point_on_circle = np.asarray(getPointOnVC(origin, point, ipd, eye=eye))
-	return xzToTheta(point_on_circle, origin)
-
-def mapPointToPanaromaColumn(point, origin, ipd, eye=1):
-	global_theta = mapPointToPanaromaAngle(point, origin, ipd, eye)
-	return thetaToNormalizedX(global_theta)
-
 
 def mapPointToODSAngle(point, origin, ipd, eye=1):
 	dist = np.linalg.norm(np.asarray(point)-np.asarray(origin))

@@ -3,6 +3,7 @@ import numpy as np
 from cameras import *
 from RayGeometry import *
 from viewSynth import *
+import matplotlib.patches as mpatches
 
 
 class RendererODS():
@@ -96,6 +97,7 @@ class RendererODS():
 				viewing_circle = getCirclePoints(viewing_circle_centre, ipd/2)
 				ax.scatter(viewing_circle[:, 0],viewing_circle[:, 1], color='red')
 
+			legend_labels = []
 			for i in range(0, 10):
 				image_width = int(self.camera_list[i].resolution[0])
 				if eye is 1:
@@ -116,7 +118,9 @@ class RendererODS():
 					# Plot where the start, middle and end of an image are mapped in the global frame of reference
 					ax.scatter(point_in_3d[0], point_in_3d[2], color=self.color_list[i])
 					ax.scatter(point[0], point[1], color=self.color_list[i])
-
+				# Set legend labels
+				legend_labels.append(mpatches.Patch(color=self.color_list[i], label='cam ' + str(i)))
+			pyplt.legend(handles=legend_labels)
 			pyplt.show()
 
 
@@ -335,7 +339,6 @@ class RendererODS():
 				# Get horizontal flow for the current column
 				ver_flow = flow[row_id, col_id, 0]
 				hor_flow = flow[row_id, col_id, 1]
-
 				col_id_correspondence = col_id + hor_flow
 				row_id_correspondence = row_id + ver_flow
 				ray_second = camSecond.getRayForPixelInGlobalRef(col_id_correspondence, row_id_correspondence)
@@ -403,13 +406,13 @@ class RendererODS():
 		for cam in range(cam_start, cam_end, 2):
 			tempL2R = self.viewInterpolate(camera_order[cam], camera_order[cam+1], 
 				camera_order[cam], camera_order[cam+1], width, direction='left2right',
-				origin=origin, ipd=ipd, eye=eye, vi_type='pwise')
+				origin=origin, ipd=ipd, eye=eye, vi_type='cwise')
 			output_image = output_image + tempL2R
 
 		for cam in range(cam_start, cam_end, 2):
 			tempL2R = self.viewInterpolate(camera_order[cam], camera_order[cam+1], 
 				camera_order[cam], camera_order[cam+1], width, direction='right2left',
-				origin=origin, ipd=ipd, eye=eye, vi_type='pwise')
+				origin=origin, ipd=ipd, eye=eye, vi_type='cwise')
 			output_image = output_image + tempL2R
 
 		return output_image

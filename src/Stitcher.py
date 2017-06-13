@@ -34,8 +34,8 @@ class Stitcher:
 		result = np.zeros((image2.shape[1]+image1.shape[1], image2.shape[0]))
 		size_res = (result.shape)
 		temp = cv2.warpPerspective(image1, H, size_res)
-		print(H)
-		print(H.shape)
+		# print(H)
+		# print(H.shape)
 		result = temp
 		result[0:image2.shape[0], 0:image2.shape[1]] = image2
 

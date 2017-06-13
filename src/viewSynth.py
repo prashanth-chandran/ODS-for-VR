@@ -13,8 +13,6 @@ class OpticalFlowCalculator:
 	def calculateFlow(self, current_f, next_f):
 		cf = cv2.cvtColor(current_f, cv2.COLOR_BGR2GRAY)
 		nf = cv2.cvtColor(next_f, cv2.COLOR_BGR2GRAY)
-		#cf=current_f
-		#nf=next_f
 		flow = cv2.calcOpticalFlowFarneback(cf, nf, None, 0.5, 3, 15, 3, 5, 1.2, 0)
 		return flow
 
@@ -29,6 +27,15 @@ class OpticalFlowCalculator:
 		hsv[...,2] = np.minimum(v*4, 255)
 		bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 		return bgr
+
+	def warpImageWithFlow(self, img, flow):
+		h, w = flow.shape[:2]
+		flow = -flow
+		# print(np.arange(w).shape)
+		flow[:,:,0] += np.arange(w)
+		flow[:,:,1] += np.arange(h)[:,np.newaxis]
+		res = cv2.remap(img, flow, None, cv2.INTER_LINEAR)
+		return res
 
 	def showQuiverPlot(self, flow):
 		rows = flow.shape[0]

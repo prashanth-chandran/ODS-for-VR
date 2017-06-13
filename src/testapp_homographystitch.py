@@ -1,6 +1,7 @@
 from Stitcher import *
 import imutils
 import cv2
+import matplotlib.pyplot as pyplt
 import argparse
 
 
@@ -17,18 +18,19 @@ def testImageStitcher():
 	image2 = cv2.imread(args["second"])
 	image1 = imutils.resize(image1, width=400)
 	image2 = imutils.resize(image2, width=400)
-	print(image1.shape, image2.shape)
+	# print(image1.shape, image2.shape)
 
 	# Call our stitch function
 	stitcher = Stitcher()
 	(pan, vis) = stitcher.stitch(image2, image1, showMatches=True)
 	# Display routines
-	cv2.imshow("Image 1", image1)
-	cv2.imshow("Image 2", image2)
-	cv2.imshow("Key point matches", vis)
-	cv2.imshow("Stitched result", pan)
-	cv2.waitKey(0)
-	cv2.imwrite(args["result"], pan)
+	pyplt.subplot(221), pyplt.imshow(image1), pyplt.title('Image 1'), pyplt.axis('off')
+	pyplt.subplot(222), pyplt.imshow(image2), pyplt.title('Image 2'), pyplt.axis('off')
+	pyplt.subplot(223), pyplt.imshow(vis), pyplt.title('Keypoint matches'), pyplt.axis('off')
+	pyplt.subplot(224), pyplt.imshow(pan), pyplt.title('Perspective warp'), pyplt.axis('off')
+	pyplt.show()
+	if args["result"] is not None:
+		cv2.imwrite(args["result"], pan)
 
 
 def buildPanaroma():

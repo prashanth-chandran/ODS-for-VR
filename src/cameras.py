@@ -74,6 +74,7 @@ class Camera:
     def getRayForPixelInGlobalRef(self, col, row):
         self.cameraSanityCheck()
         local_ray = self.getRayForPixelInLocalRef(col, row)
+        # local_ray = unit_vector(local_ray)
         ray_homogeneous = np.append(local_ray, 1)
         global_ray = np.dot(self.extrinsics_absolute, ray_homogeneous)
         return global_ray[0:3]
