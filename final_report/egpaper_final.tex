@@ -22,7 +22,7 @@
 
 % Pages are numbered in submission mode, and unnumbered in camera-ready
 %\ifcvprfinal\pagestyle{empty}\fi
-\setcounter{page}{4321}
+\setcounter{page}{1}
 \begin{document}
 
 %%%%%%%%% TITLE
@@ -102,12 +102,15 @@ The ideal solution would be to have a stereo image pair for every head orientati
 The whole project is based on a paper by Anderson et al.~\cite{jump16}, where a system for viewing omni-directional stereo videos, called 'Jump', is introduced. Therefore, our main pipeline is the same as described in Anderson et al.~\cite{jump16}. However, we did not implement the sophisticated algorithm for the flow computation. We used a provided method of OpenCV for the flow estimation. Furthermore, we simplified the exposure correction and the composition step. For the implementation details, we also used the article~\cite{ods} by Google Inc.
 
 %------------------------------------------------------------------------
+\section{Work subdivision}
+
+%------------------------------------------------------------------------
 \section{Method}
 An overview of our pipeline can be found in figure~\ref{pipeline}. The inputs are 10 synchronized videos from a camera rig. The first step is the calibration of the different cameras of the rig, which includes the computation of the intrinsics and extrinsics of each camera. The next step is the optical flow estimation between the neighboring camera pairs. For having nice transitions in the final ODS stitch, an exposure correction between neighboring image pairs is applied. Based on the computed flow values, the view interpolation between the images is calculated and they are stitched together as a final step, which results in the desired ODS video.
 
 \begin{figure}[t]
 \begin{center}
-   \includegraphics[width=0.3\linewidth]{pictures/pipeline.png}
+   \includegraphics[width=0.3\linewidth]{pictures/pipeline.PNG}
 \end{center}
    \caption{Overview of the pipeline.}
 \label{pipeline}
@@ -115,11 +118,11 @@ An overview of our pipeline can be found in figure~\ref{pipeline}. The inputs ar
 
 \subsection{Camera calibration}
 Additionally to the dataset, consisting of 10 videos, we received a calibration file from our supervisor, which contained the calibration data for each camera. This calibration data consists of the intrinsic and relative extrinsic of each camera. For the computation in the later stages of our pipeline, we also needed the absolute extrinsics of each camera, which were computed with the following formula:
-$E_i=....$
+$E_i= E_{i-1} \cdot T_i^{-1}$ where $E_i$ represents absolute extrinsics (relative to camera 0) of camera i while $T_i$ represents the relative extrinsics (with respect to the previous camera) of camera i.
 
 \begin{figure}[t]
 \begin{center}
-   \includegraphics[width=0.8\linewidth]{pictures/our_camera_rig.png}
+   \includegraphics[width=0.8\linewidth]{pictures/our_camera_rig.PNG}
 \end{center}
    \caption{An illustration of our camera rig based on the calibration file.}
 \label{rig}
@@ -144,7 +147,7 @@ Where $\theta_ {0}$ and $\theta_ {1}$ are the headings of the two cameras in the
 
 \begin{figure}[t]
 \begin{center}
-   \includegraphics[width=0.7\linewidth]{pictures/interpolation.png}
+   \includegraphics[width=0.7\linewidth]{pictures/interpolation.PNG}
 \end{center}
    \caption{This is an illustration of the different angles used in the interpolation formula. The red lines are the central rays of the corresponding camera.}
 \label{interpolation}
@@ -156,20 +159,30 @@ Where $\theta_ {0}$ and $\theta_ {1}$ are the headings of the two cameras in the
 
 %------------------------------------------------------------------------
 \section{Results}
-
+For testing our implementation we used a dataset provided from our supervisor It's obtained from 10 cameras disposed on an ellipse approaching a circle, which are pairwise equidistant. The calibration file was provided too. For getting an idea of the possible output, we produced an homography stitching which can be seen in image ...
+In Figure ~\ref{lefteye} we can instead see the output of the ODS stitching for our dataset for the left eye considering the first frame.
+\begin{figure}[t]
+\begin{center}
+   \includegraphics[width=0.7\linewidth]{pictures/frame0_lefteye_cwise.png}
+\end{center}
+   \caption{ODS stitching result for the left eye, first frame.}
+\label{lefteye}
+\end{figure}
 
 %------------------------------------------------------------------------
 \section{Discussion}
-
-
+As we can see in picture ~\ref{lefteye} we get good results only for the camera couples which provide a good overlap. This is due to the fact that the optical flow between the other images is very low since they don't have much in common. Another issue is that if we take a look at the image planes plotted in Figure ~\ref{imageplanes} there are empty spaces between them. For this we don't have a real idea of why it happens, it could be because of problems with the calibration file.
+Further, better results could have been obtained if we had an Odyssey GoPro at disposal since this would have given us the same working conditions as the authors had.
+\begin{figure}[t]
+\begin{center}
+   \includegraphics[width=0.7\linewidth]{pictures/rig_detailed.png}
+\end{center}
+   \caption{Plot of the image planes of the different cameras}
+\label{imageplanes}
+\end{figure}
 %------------------------------------------------------------------------
 \section{Conclusion}
-
-
-
-
-
-
+The results obtained from Anderson et al.~\cite{jump16} are better than ours but this was expected. We had less cameras at disposal (10 instead of 16) which weren't in a perfect rig like it's the case using the Odyssey GoPro. This would have produced in general a better overlap among the images, which would have resulted in a better interpolation.
 
 {\small
 \bibliographystyle{ieee}
