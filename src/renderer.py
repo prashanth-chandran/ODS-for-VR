@@ -22,26 +22,50 @@ class RendererODS():
 		
 		return theta_p
 
-	def normalizeThenInterpolate(self, t0, t1, ta, tb):
-		# handle special case of the discontinuity between 0 to 360 degrees
-		if abs(t0-t1) <= 270.0:
-			drange = t1-t0
-			t0s = (t0-t0)/drange
-			t1s = (t1-t0)/drange
-			tas = (ta-t0)/drange
-			tbs = (tb-t0)/drange
-			tps = self.jumpLinearInterpolation(t0s, t1s, tas, tbs)
-			tps = tps*drange + t0
+	def normalizeThenInterpolate(self, t0, t1, ta, tb, eye=-1):
+		if eye==-1:
+			# handle special case of the discontinuity between 0 to 360 degrees
+			if abs(t0-t1) <= 270.0:
+				drange = t0-t1
+				t0s = (t0-t0)/drange
+				t1s = (t1-t0)/drange
+				tas = (ta-t0)/drange
+				tbs = (tb-t0)/drange
+				tps = self.jumpLinearInterpolation(t0s, t1s, tas, tbs)
+				tps = tps*drange + t0
+			else:
+				t1_new = abs(t1-360)+t0
+				tb_new = abs(tb-360)+t0
+				drange = (abs(t1_new))*2
+				t0s = (t0-t0)/drange
+				t1s = (abs(t1_new))/drange
+				tas = (t0-ta)/drange
+				tbs = (abs(tb_new))/drange
+				tps = self.jumpLinearInterpolation(t0s, t1s, tas, tbs)
+				tps = t0-(tps*drange)+360
 		else:
-			t1_new = abs(t1-360)+t0
-			tb_new = abs(tb-360)+t0
-			drange = (abs(t1_new))*2
-			t0s = (t0-t0)/drange
-			t1s = (abs(t1_new))/drange
-			tas = (t0-ta)/drange
-			tbs = (abs(tb_new))/drange
-			tps = self.jumpLinearInterpolation(t0s, t1s, tas, tbs)
-			tps = t0-(tps*drange)+360
+			# handle special case of the discontinuity between 0 to 360 degrees
+			if abs(t0-t1) <= 270.0:
+				drange = t0-t1
+				t0s = (t0-t0)/drange
+				t1s = (t1-t0)/drange
+				tas = (ta-t0)/drange
+				tbs = (tb-t0)/drange
+				tps = self.jumpLinearInterpolation(t0s, t1s, tas, tbs)
+				tps = tps*drange + t0
+			else:
+				t0 = t0+360
+				if abs(ta-t1) >= 270:
+					ta = ta+360
+				if abs(tb-t1) >= 270:
+					tb = tb+360
+				drange = t0-t1
+				t0s = (t0-t0)/drange
+				t1s = (t1-t0)/drange
+				tas = (ta-t0)/drange
+				tbs = (tb-t0)/drange
+				tps = self.jumpLinearInterpolation(t0s, t1s, tas, tbs)
+				tps = tps*drange + t0
 
 		return tps
 
@@ -262,7 +286,7 @@ class RendererODS():
 			theta_b = mapPointToODSAngle(ray_second_xz, viewing_circle_centre, ipd, eye)
 			theta_b_degree = radians2Degrees360(theta_b)
 
-			theta_p_degree = self.normalizeThenInterpolate(theta_0_degree, theta_1_degree, theta_a_degree, theta_b_degree)
+			theta_p_degree = self.normalizeThenInterpolate(theta_0_degree, theta_1_degree, theta_a_degree, theta_b_degree, eye)
 			theta_p = degrees3602Radians(theta_p_degree)
 
 			xn_new = thetaToNormalizedX(theta_p)
@@ -346,7 +370,7 @@ class RendererODS():
 				theta_b = mapPointToODSAngle(ray_second_xz, viewing_circle_centre, ipd, eye)
 				theta_b_degree = radians2Degrees360(theta_b)
 
-				theta_p_degree = self.normalizeThenInterpolate(theta_0_degree, theta_1_degree, theta_a_degree, theta_b_degree)
+				theta_p_degree = self.normalizeThenInterpolate(theta_0_degree, theta_1_degree, theta_a_degree, theta_b_degree, eye)
 				theta_p = degrees3602Radians(theta_p_degree)
 
 				xn_new = thetaToNormalizedX(theta_p)
@@ -408,12 +432,14 @@ class RendererODS():
 				camera_order[cam], camera_order[cam+1], width, direction='left2right',
 				origin=origin, ipd=ipd, eye=eye, vi_type='cwise')
 			output_image = output_image + tempL2R
+			# pass
 
 		for cam in range(cam_start, cam_end, 2):
-			tempL2R = self.viewInterpolate(camera_order[cam], camera_order[cam+1], 
+			tempR2L = self.viewInterpolate(camera_order[cam], camera_order[cam+1], 
 				camera_order[cam], camera_order[cam+1], width, direction='right2left',
 				origin=origin, ipd=ipd, eye=eye, vi_type='cwise')
-			output_image = output_image + tempL2R
+			output_image = output_image + tempR2L
+			# pass
 
 		return output_image
 

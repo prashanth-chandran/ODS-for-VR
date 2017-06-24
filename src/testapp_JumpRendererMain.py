@@ -40,11 +40,13 @@ def test_ODS_renderer():
 	rods.setCameraList(cc)
 
 	pan_for_eye = rods.render360WithViewInterpolation(0.062, [480, 2000], eye=-1)
-	pyplt.subplot(211), pyplt.imshow(pan_for_eye), pyplt.axis('off'), pyplt.title('360 - View interpolation')
+	pyplt.subplot(211), pyplt.imshow(pan_for_eye), pyplt.axis('off'), pyplt.title('360 - Left eye')
+	pan_for_eye = rods.render360WithViewInterpolation(0.062, [480, 2000], eye=1)
+	pyplt.subplot(212), pyplt.imshow(pan_for_eye), pyplt.axis('off'), pyplt.title('360 - Right eye')
 
 	# This function goes over every camera in the list and plots image planes in the global frame. 
 	# These points are also mapped onto the viewing circle.
-	# rods.rigVisTest(0.062, [480, 960], eye=-1)
+	# rods.rigVisTest(0.062, [480, 960], eye=1)
 
 	# vis_image_right = rods.render360NoInterpolation(0.062, [480, 2000], eye=1)
 	# pyplt.subplot(211), pyplt.imshow(vis_image_right), pyplt.axis('off'), pyplt.title('360 - No interpolation - Left eye')

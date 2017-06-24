@@ -194,11 +194,11 @@ def mapPointToODSAngle(point, origin, ipd, eye=1):
 	r = ipd/2
 	theta = np.arccos(r/dist)
 	angle_to_x = xzToTheta(np.asarray(point), np.asarray(origin))
-	# print('interior angle: ', radians2Degrees(theta))
-	# print('additive angle: ', radians2Degrees(angle_to_x))
+	# print('interior angle: ', radians2Degrees360(theta))
+	# print('additive angle: ', radians2Degrees360(angle_to_x))
 	theta_final = 0
 	if eye==1:
-		theta_final = angle_to_x - theta
+		theta_final = np.mod(angle_to_x + theta - np.pi, 2*np.pi)
 	else:
 		theta_final = angle_to_x + theta
 
