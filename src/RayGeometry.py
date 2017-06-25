@@ -122,6 +122,7 @@ def getAngle(centre, cam_pos, ipd):
 
 def getPointOnVC(centre, point, ipd, eye=1):
 	"""
+	NOT USED:
 	Given a 3D point, the centre of the viewing circle and the IPD, 
 	this function returns a point that is tangential to the viewing circle and goes through the
 	3D point.
@@ -157,7 +158,7 @@ def getPointOnVC(centre, point, ipd, eye=1):
 
 def getIntersectionOnVC(center, cam, point, radius, eye=1):
 	"""
-	Julia's complicated math stuff that I don't understand :D 
+	NOT USED: Julia's complicated math stuff that I don't understand :D 
 	"""
 	m=(point[1]-cam[1])/(point[0]-cam[0])
 	c=cam[1]-(m*cam[0])

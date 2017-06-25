@@ -38,6 +38,8 @@ def test_ODS_renderer():
 	rods = RendererODS()
 	rods.setImageList(ic0)
 	rods.setCameraList(cc)
+	camera_order = [0, 1, 2, 3, 8, 9, 6, 7, 4, 5, 0]
+	rods.setCameraOrder(camera_order)
 
 	pan_for_eye = rods.render360WithViewInterpolation(0.062, [480, 2000], eye=-1)
 	pyplt.subplot(211), pyplt.imshow(pan_for_eye), pyplt.axis('off'), pyplt.title('360 - Left eye')

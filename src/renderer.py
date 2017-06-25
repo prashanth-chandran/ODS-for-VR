@@ -98,7 +98,12 @@ class RendererODS():
 
 	def setCameraList(self, camera_collection):
 		self.camera_list = camera_collection
+		self.camera_order = range(self.camera_list.getNumCameras())
+		self.camera_order.append(0)
 		self.init_complete = True
+
+	def setCameraOrder(self, camera_order):
+		self.camera_order = camera_order
 
 	def setImageList(self, image_collection):
 		self.image_list = image_collection
@@ -439,7 +444,7 @@ class RendererODS():
 
 		nc = self.camera_list.getNumCameras()
 		# Order of the cameras in the rig
-		camera_order = [0, 1, 2, 3, 8, 9, 6, 7, 4, 5, 0]
+		camera_order = self.camera_order
 		# setup cameras for rendering
 		for i in range(0, nc):
 			theta = getAngle(viewing_circle_centre, camera_positions[i, :], ipd)
