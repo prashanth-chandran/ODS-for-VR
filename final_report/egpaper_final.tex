@@ -7,6 +7,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{gensymb}
+\usepackage{url}
 
 % Include other packages here, before hyperref.
 
@@ -54,7 +55,7 @@ www.ethz.ch\\
 
 %%%%%%%%% ABSTRACT
 \begin{abstract}
-   This project is an implementation of an Omni directional stereo (ODS) renderer called 'Jump' that was proposed by Anderson et.al in \cite{jump16}.  
+   This project is an implementation of an Omni directional stereo (ODS) renderer; 'Jump', that was proposed by Anderson et.al in \cite{jump16}.  To render ODS content, we worked with data that was captured from a camera rig consisting of 10 cameras. The ODS rendering pipeline proposed by  \cite{jump16} consists of the stages of camera calibration, optical flow estimation, exposure correction, view interpolation, and composting. Staying mostly faithful to the rendering pipeline of \cite{jump16}, we introduced a few simplifications owning to the limitations of our camera rig and time considerations. The renderer was implemented from scratch in Python and relies on OpenCV only for image I/O and optical flow calculation. Our ODS renderer is extremely generic, easy to use and can be readily used to render ODS content from an arbitrary rig only given its calibration data. 
 \end{abstract}
 
 %%%%%%%%% BODY TEXT
@@ -62,7 +63,7 @@ www.ethz.ch\\
 
 An ideal virtual reality environment is one where the user can experience the world in 1) stereo, where eye get an image appropriate to where the user is sees, and 2) in 360 degrees, where the user is free to look in any direction. The rendering of Omni directional stereo content is therefore absolutely necessary for visual immersion. 
 
-The perception of depth in human stereo or binocular vision is a result of the fusion of images captured by the left and right eyes. 
+The primary reason why VR environments have to be rendered in stereo is because of the way in which humans perceive depth. The perception of depth in human stereo or binocular vision is a result of the fusion of images captured by the left and right eyes. 
 In order to render stereo images, we need to capture synchronized frames from two cameras set apart by the interpupillary distance (IPD); which denotes the distance between our two eyes. The IPD on average about 6.4 cm. However, since for applications in virtual reality, we not only require images that are rendered in stereo, but for them to also be omni-directional. 
 
 One straight forward method of capturing such videos in 360 would be to use two omni-directional cameras that are separated by the human IPD. This method however, suffers from two limitations. The first problem with such an approach is that the two cameras would see each other. The second and more important problem is that the objects which lie on the line passing through the two camera centers will have no disparity (see figure~\ref{two_360}). The absence of disparity makes the perception of depth impossible and therefore, with this simple solution, we would not be able to render  videos in omni-directional stereo.
@@ -127,32 +128,32 @@ The steps involved in our ODS stitching pipeline is shown in figure \ref{pipelin
 \begin{itemize}
 \item \textbf{Prashanth Chandran}
 \begin{itemize}
-\item ODS stitching
-\item exposure correction
-\item Other experiments
+\item View interpolation and ODS stitching
+\item Experiments with homography based stitching and other visualizations
+\item Exposure correction
 \item Final report
 \end{itemize}
 \item \textbf{Sasha Pagani}
 \begin{itemize}
-\item Flow estimation
+\item Optical flow estimation with openCV
 \item Camera calibration
 \item Experiments with Unity on the Google cardboard
 \item Mid-term review presentation
 \item Final report
 \end{itemize}
 \item \textbf{Julia Giger}
-\item View interpolation
-\item Experiments with Unity on the Google cardboard
-\item Final report
 \begin{itemize}
-\item 
+\item View interpolation and ODS stitching
+\item Experiments with Unity on the Google cardboard
+\item Mid-term review presentation
+\item Final report
 \end{itemize}
 \end{itemize}
 
 %------------------------------------------------------------------------
 \section{Method}
 \label{method}
-As mentioned before, figure~\ref{pipeline} depicts our ODS stitching pipeline. The inputs to our renderer are synchronized videos captured from 10 cameras arranged on a rig. As a first step, these cameras are calibrated to scale using standard structure from motion algorithms. For synthesizing novel views between adjacent cameras, dense optical flow is estimated between temporally consistent frames of neighbouring camera pairs. Camera gains that compensate for differences in camera exposure are then calculated in an exposure correction step. Using the previously estimated optical flow, a novel linear view interpolation, as proposed by \cite{jump16} is carried out and the images are composted to result in an ODS panaroma.  
+As mentioned before, figure~\ref{pipeline} depicts our ODS stitching pipeline. The inputs to our renderer are synchronized videos captured from 10 cameras arranged on a rig. As a first step, these cameras are calibrated to scale using standard structure from motion algorithms \cite{sfm}. For synthesizing novel views between adjacent cameras, dense optical flow is estimated between temporally consistent frames of neighbouring camera pairs. Camera gains that compensate for differences in camera exposure are then calculated in an exposure correction step. Using the previously estimated optical flow, a novel linear view interpolation, as proposed by \cite{jump16} is carried out and the images are composted to result in an ODS panaroma.  
 \begin{figure}[t]
 \begin{center}
    \includegraphics[width=0.5\linewidth]{pictures/pipeline.PNG}
@@ -163,7 +164,7 @@ As mentioned before, figure~\ref{pipeline} depicts our ODS stitching pipeline. T
 
 \subsection{Camera rig and calibration}
 \label{sec:camera-rig}
-The 10 cameras in the rig were calibrated with the help of 'Kalibr'. The calibration data consists of the intrinsics and the relative extrinsics of each camera. For our rendering purposes, we would need the global extrinsics (the extrinsics of each camera with respect to the origin), as opposed to the relative extrinsics (which is w.r.t location and orientation of the previous camera in the rig). Global extrinsics for each camera was calculated from the relative extrinsics using equation \ref{eq:extrinsics}. 
+The 10 cameras in the rig were calibrated with the help of 'Kalibr' \cite{kalibr}. The calibration data consists of the intrinsics and the relative extrinsics of each camera. For our rendering purposes, we would need the global extrinsics (the extrinsics of each camera with respect to the origin), as opposed to the relative extrinsics (which is w.r.t location and orientation of the previous camera in the rig). Global extrinsics for each camera was calculated from the relative extrinsics using equation \ref{eq:extrinsics}. 
 \begin{equation}
 GE_i = GE_{i-1} \cdot RE_{i}^{-1}
 \label{eq:extrinsics}
@@ -232,11 +233,11 @@ where $\theta_{0}$ and $\theta_ {1}$ are the headings of the two cameras in the 
 \end{figure}
 
 \subsection{Stitching}
-No splatting implemented. 
+Once novel views have been synthesized between cameras, they are projected onto the ODS stitch as explained in section \ref{sec:viewinterp}. We use a simple weighted average to blend the images on the final ODS panaroma. Using more sophisticated algorithms for blending will of course yield better results. 
 %------------------------------------------------------------------------
 \section{Results and Discussion}
 \label{resultsdis}
-For testing our implementation we used a dataset provided by our supervisor. 
+For testing our implementation we used a dataset that was provided by our supervisor. 
 \subsection{Optical flow for dense correspondences}
 \label{sec:challenges-flow}
 As discussed in section \ref{sec:flow}, estimating optical flow between two cameras with \cite{farneback} works satisfactorily when the motion between the two cameras is small. In figure \ref{fig:optical-flow-45}, we see the result of estimating optical flow between cameras 4 and 5. 
@@ -280,9 +281,12 @@ Using optical flow to find dense correspondences between cameras is not a proble
 
 \subsection{Content rendered by our ODS renderer}
 \label{ods-results}
-We refer the reader to figure \ref{fig:imageplanes} to note that the cameras in our rig are numbered as follows: starting clockwise (0, 1, 2, 3, 8, 9, 6, 7, 4, 5). Following the problems mentioned in section \ref{sec:challenges-flow}, we were able to interpolate views only between cameras (0-1, 2-3, 8-9 etc) and not between adjacent stereo cameras pairs i.e. between cameras 1-2, 3-8 etc. As a result, black stripes in the ODS panaroma are to be expected.
+We refer the reader to figure \ref{fig:imageplanes} to note that the cameras in our rig are numbered as follows: starting clockwise (0, 1, 2, 3, 8, 9, 6, 7, 4, 5). Following the problems mentioned in section \ref{sec:challenges-flow}, we were able to interpolate views only between cameras (0-1, 2-3, 8-9 etc) and not between adjacent stereo cameras pairs i.e. between cameras 1-2, 3-8 etc. As a result, black stripes in the ODS panaroma are to be expected. 
 
 Figures  ~\ref{fig:lefteye_pwise} and ~\ref{fig:lefteye_cwise} show two variations of the 360 degree ODS stitch produced by our renderer for the left eye. In figure \ref{fig:lefteye_pwise}, we use every pixel's horizontal flow vector in determining it's position in the ODS panaroma according to eq. \ref{eq:interp}. In figure \ref{fig:lefteye_cwise}, we only consider the average horizontal flow of every column in the image to determine the column's final position in the ODS stitch. This results in significantly faster rendering as one would expect. 
+
+A careful reader must have observed that the second image stripe from left in figures \ref{fig:lefteye_cwise} and \ref{fig:lefteye_pwise} seem abnormal. This is because one of the cameras in the rig viz. camera 3, was not functioning as expected. Therefore the images captured by it seem abnormal. These are not artefacts produced during rendering. 
+ 
 \begin{figure}[t]
 \begin{center}
    \includegraphics[width=\linewidth]{../results/ODS-renderer-results/frame0_lefteye_pwise.png}
@@ -299,16 +303,25 @@ Figures  ~\ref{fig:lefteye_pwise} and ~\ref{fig:lefteye_cwise} show two variatio
 \label{fig:lefteye_cwise}
 \end{figure}
 
+ODS content for viewing in a VR device such as the Google cardboard is generally rendered as two images stacked on top of each other.  With the given dataset and our rendering pipeline, we were able to generate the result shown in figure \ref{fig:left_right_eyecwise}.
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth]{../results/ODS-renderer-results/left-right-eye.png}
+\caption{Rendered ODS images for the left and right eye.}
+\label{fig:left_right_eyecwise}
+\end{figure}
+
 \subsection{Implementation details}
 \begin{itemize}
 \item Our ODS renderer was written from scratch in Python. All of the multiview projection geometry was implemented. Our renderer relies on OpenCV only for Image I/O operations and for computing the optical flow. 
 \item Given a .yaml camera calibration file, our renderer can be extended to any arbitrary camera rig without any modification. This highlights the generic nature of our implementation. 
-\item Our implementation takes approximately 30 seconds to render a 2K panaroma when column wise flow for interpolation is used. It takes about 2 minutes to render a 2K panaroma when per-pixel flow for interpolation is used. 
+\item Our implementation takes approximately 6 seconds to render a 2K panaroma when column wise flow for interpolation is used. It takes about 2 minutes to render a 2K panaroma when per-pixel flow for interpolation is used. 
+\item Though exposure correction has been implemented and tested (refer file \emph{ExposureCorrect.py} in the handout), we weren't able to use it in the final ODS rendering results because of black stripes in the rendered results. 
 \end{itemize}
 %------------------------------------------------------------------------
 \section{Conclusion}
 \label{conclusion}
-In this project, we implement an ODS renderer that The results obtained from Anderson et al.~\cite{jump16} are better than ours but this was expected. We had less cameras at disposal (10 instead of 16) which weren't in a perfect rig like it's the case using the Odyssey GoPro. This would have produced in general a better overlap among the images, which would have resulted in a better interpolation.
+In this project, we implemented an ODS renderer based on \cite{jump16} that can render 360 stereo video.  The results obtained by Anderson et al.~\cite{jump16} are much better than ours but this was to be expected for several reasons. Firstly, the authors in \cite{jump16} designed and used a perfectly radial Odyssey GoPro rig with 16 cameras. Results in this project, on the other hand are rendered from only different 10 cameras with a different rig geometry. We also use an off the shelf optical flow algorithm instead of the much more powerful optical flow algorithm proposed in \cite{jump16}. Our composting methods are much simpler than those used in \cite{jump16} too. With improvements to the optical flow and compositing algorithms, and with a camera rig similar to that used in \cite{jump16}, we are confident that our renderer will produce better results.
 
 {\small
 \bibliographystyle{ieee}
