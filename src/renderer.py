@@ -69,6 +69,33 @@ class RendererODS():
 
 		return tps
 
+	def pixRGB2Gray(self, pix):
+		assert(pix.shape[0]==3)
+		return 0.2989 * pix[0] + 0.5870 * pix[1] + 0.1140 * pix[2]
+
+	def getBrighterPixel(self, pix1, pix2):
+		if self.pixRGB2Gray(pix1) >= self.pixRGB2Gray(pix2):
+			return pix1
+		else:
+			return pix2
+
+
+	def updateODSPanaroma(self, panaroma, temp_result):
+		num_cols = temp_result.shape[1]
+		for i in range(num_cols):
+			col_vals = temp_result[:, i, :]
+			sum_col_vals = np.sum(col_vals)
+			if sum_col_vals == 0:
+				panaroma[:, i, :] = panaroma[:, i, :] + temp_result[:, i, :]
+			else:
+				pan_sum = np.sum(panaroma[:, i, :])
+				if pan_sum == 0:
+					panaroma[:, i, :] = temp_result[:, i, :]
+				else:
+					panaroma[:, i, :] = 0.5*panaroma[:, i, :] + 0.5*temp_result[:, i, :]
+		return panaroma
+
+
 	def setCameraList(self, camera_collection):
 		self.camera_list = camera_collection
 		self.init_complete = True
@@ -431,15 +458,13 @@ class RendererODS():
 			tempL2R = self.viewInterpolate(camera_order[cam], camera_order[cam+1], 
 				camera_order[cam], camera_order[cam+1], width, direction='left2right',
 				origin=origin, ipd=ipd, eye=eye, vi_type='cwise')
-			output_image = output_image + tempL2R
-			# pass
+			output_image = self.updateODSPanaroma(output_image, tempL2R)
 
 		for cam in range(cam_start, cam_end, 2):
 			tempR2L = self.viewInterpolate(camera_order[cam], camera_order[cam+1], 
 				camera_order[cam], camera_order[cam+1], width, direction='right2left',
 				origin=origin, ipd=ipd, eye=eye, vi_type='cwise')
-			output_image = output_image + tempR2L
-			# pass
+			output_image = self.updateODSPanaroma(output_image, tempR2L)
 
 		return output_image
 
